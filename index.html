@@ -1,27 +1,43 @@
 <!doctype html>
 <html lang="ja"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>無料AI業務削減診断 | BreakAI Labs</title>
-<meta name="description" content="普段の仕事を3つ入力。AI化を試す優先順位と削減余地をその場で確認。">
+<meta name="description" content="選ぶだけ。普段の仕事を1つ選び、AI活用で減らせる時間の目安を約1分で確認できます。">
 <link rel="stylesheet" href="styles.css">
 </head><body>
-<header class="hero"><div class="wrap">
-<p class="eyebrow">無料・約3分</p>
-<h1>その仕事、<br><span>本当に毎回人がやる必要がありますか？</span></h1>
-<p class="lead">気になる業務を3つ入力すると、時間削減の大きい順に整理します。最初に試すのは1つだけです。</p>
-<a class="btn" href="#diag">無料で試算する</a>
+<header class="hero"><div class="wrap heroInner">
+<p class="eyebrow">無料・約1分</p>
+<h1>AIで減らせる仕事、<br><span>まず1つだけ見つけます。</span></h1>
+<p class="lead">難しい入力はありません。業種と仕事を選び、だいたいの作業時間を答えるだけです。</p>
+<a class="btn heroBtn" href="#diag">無料で診断する</a>
 </div></header>
 <main class="wrap">
-<section class="steps"><div>① 3業務を入力</div><div>② 削減余地を計算</div><div>③ 1つだけ試す</div></section>
-<section id="diag" class="panel"><h2>AI業務削減診断</h2>
-<div class="grid"><label>業種<input id="industry" placeholder="例：建設、物流、不動産"></label><label>実質時間単価<input id="hourly" type="number" value="3000" min="500"></label></div>
-<div id="tasks"></div><button class="sub" id="add">＋業務を追加</button><button class="btn full" id="calc">診断結果を見る</button>
+<section class="how"><div><b>1</b><span>業種を選ぶ</span></div><div><b>2</b><span>仕事を選ぶ</span></div><div><b>3</b><span>時間を選ぶ</span></div></section>
+<section id="diag" class="panel wizard">
+<div class="progress"><span id="progressBar"></span></div>
+<p class="stepLabel" id="stepLabel">STEP 1 / 3</p>
+<h2 id="question">あなたの業種は？</h2>
+<p class="hint" id="hint">一番近いものを1つ選んでください。</p>
+<div id="choiceArea" class="choices"></div>
+<div id="customArea" class="customArea hidden"></div>
 </section>
-<section id="result" class="panel hidden"><h2>診断結果</h2><div class="kpis"><div><b id="before">0h</b><span>現在/月</span></div><div><b id="after">0h</b><span>目標/月</span></div><div><b id="saving">¥0</b><span>削減余地/月</span></div></div><h3>最初に試す順番</h3><div id="ranking"></div>
-<div class="cta"><h3>AIに詳しくなくても大丈夫です</h3><p>受付後はAIが内容を確認し、次のステップを整理します。</p><a id="intake" class="btn full disabled" href="#">無料診断を受け取る</a></div>
-<div class="offers"><a id="starter" class="card disabled" href="#"><b>自分で試す</b><span>スターターキット 1,980円</span></a><a id="report" class="card disabled" href="#"><b>会社向けに整理</b><span>個別診断レポート 19,800円</span></a></div>
-<p class="note">※削減額は入力条件に基づく試算で、成果を保証するものではありません。</p></section>
-<section class="panel"><h2>どう進む？</h2><ol><li>普段の仕事を3つ程度入力</li><li>AIが時間削減の大きい順に整理</li><li>まず1つだけ試す</li><li>数字が出たら次へ広げる</li></ol></section>
+<section id="result" class="panel result hidden">
+<p class="resultBadge">診断結果</p>
+<h2><span id="resultTask">この仕事</span>は、AI化を試す候補です</h2>
+<div class="bigResult"><span>削減できる目安</span><strong id="savedHours">約0時間 / 月</strong></div>
+<div class="resultGrid">
+<div><span>現在</span><b id="beforeHours">0時間/月</b></div>
+<div><span>AI活用後の目安</span><b id="afterHours">0時間/月</b></div>
+<div><span>年間の削減目安</span><b id="yearHours">0時間/年</b></div>
+</div>
+<div class="next"><b>まずやること</b><p id="nextAction">この仕事を1つだけ、小さく試します。</p></div>
+<a id="intake" class="btn full disabled" href="#">無料の診断結果を受け取る</a>
+<p class="micro">会社名・業種・減らしたい仕事だけ。受付後はAIが整理します。</p>
+<div class="offers"><a id="starter" class="card disabled" href="#"><b>自分で試したい</b><span>スターターキット 1,980円</span></a><a id="report" class="card disabled" href="#"><b>会社向けに整理したい</b><span>個別診断 19,800円</span></a></div>
+<p class="note">※表示は一般的な業務自動化率を使った目安です。実際の効果は業務内容により異なります。</p>
+<button id="restart" class="textBtn">もう一度診断する</button>
+</section>
 </main><footer><div class="wrap">BreakAI Labs</div></footer>
-<template id="tpl"><div class="task"><input class="name" placeholder="業務名 例：見積もりの下書き"><div class="grid3"><label>1回（分）<input class="min" type="number" value="30" min="1"></label><label>週回数<input class="freq" type="number" value="5" min="1"></label><label>AI後（分）<input class="aft" type="number" value="10" min="0"></label></div></div></template>
-<script src="config.js"></script><script src="app.js"></script></body></html>
+<script src="config.js"></script><script src="app.js"></script>
+</body></html>
