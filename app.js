@@ -24,6 +24,6 @@ function step3(){progress(3);resetArea();$('#question').textContent='その仕�
  go.onclick=showResult;
 }
 function showResult(){const before=state.minutes*state.weekly*4/60;const saved=before*state.rate;const after=Math.max(0,before-saved);$('#resultTask').textContent=state.task;$('#savedHours').textContent=`約${saved.toFixed(1)}時間 / 月`;$('#beforeHours').textContent=`約${before.toFixed(1)}時間/月`;$('#afterHours').textContent=`約${after.toFixed(1)}時間/月`;$('#yearHours').textContent=`約${Math.round(saved*12)}時間/年`;$('#nextAction').textContent=`「${state.task}」をまず1つだけ小さく試し、実際に時間が減るか確認します。`;$('#diag').classList.add('hidden');$('#result').classList.remove('hidden');$('#result').scrollIntoView({behavior:'smooth'});}
-function wire(id,url){const a=$(id);if(url){a.href=url;a.classList.remove('disabled');a.target='_blank';a.rel='noopener';}else{a.onclick=e=>{e.preventDefault();alert('本番受付の準備中です。');};}}
+function wire(id,url){const a=$(id);if(!a)return;if(url){a.href=url;a.target='_blank';a.rel='noopener';}}
 $('#restart').onclick=()=>{Object.assign(state,{step:1,industry:'',task:'',minutes:0,weekly:0,rate:.5});$('#result').classList.add('hidden');$('#diag').classList.remove('hidden');step1();$('#diag').scrollIntoView({behavior:'smooth'});};
-const c=window.BREAKAI_CONFIG||{};wire('#intake',c.live&&c.freeIntakeUrl);wire('#starter',c.live&&c.starterUrl);wire('#report',c.live&&c.reportUrl);step1();
+const c=window.BREAKAI_CONFIG||{};if(c.live&&c.freeIntakeUrl&&c.starterUrl&&c.reportUrl){$('#liveCtas').classList.remove('hidden');wire('#intake',c.freeIntakeUrl);wire('#starter',c.starterUrl);wire('#report',c.reportUrl);}step1();
