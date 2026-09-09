@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>無料AI業務削減診断 | BreakAI Labs</title>
+<meta name="description" content="普段の仕事を3つ入力。AI化を試す優先順位と削減余地をその場で確認。">
+<link rel="stylesheet" href="styles.css">
+</head><body>
+<header class="hero"><div class="wrap">
+<p class="eyebrow">無料・約3分</p>
+<h1>その仕事、<br><span>本当に毎回人がやる必要がありますか？</span></h1>
+<p class="lead">気になる業務を3つ入力すると、時間削減の大きい順に整理します。最初に試すのは1つだけです。</p>
+<a class="btn" href="#diag">無料で試算する</a>
+</div></header>
+<main class="wrap">
+<section class="steps"><div>① 3業務を入力</div><div>② 削減余地を計算</div><div>③ 1つだけ試す</div></section>
+<section id="diag" class="panel"><h2>AI業務削減診断</h2>
+<div class="grid"><label>業種<input id="industry" placeholder="例：建設、物流、不動産"></label><label>実質時間単価<input id="hourly" type="number" value="3000" min="500"></label></div>
+<div id="tasks"></div><button class="sub" id="add">＋業務を追加</button><button class="btn full" id="calc">診断結果を見る</button>
+</section>
+<section id="result" class="panel hidden"><h2>診断結果</h2><div class="kpis"><div><b id="before">0h</b><span>現在/月</span></div><div><b id="after">0h</b><span>目標/月</span></div><div><b id="saving">¥0</b><span>削減余地/月</span></div></div><h3>最初に試す順番</h3><div id="ranking"></div>
+<div class="cta"><h3>AIに詳しくなくても大丈夫です</h3><p>受付後はAIが内容を確認し、次のステップを整理します。</p><a id="intake" class="btn full disabled" href="#">無料診断を受け取る</a></div>
+<div class="offers"><a id="starter" class="card disabled" href="#"><b>自分で試す</b><span>スターターキット 1,980円</span></a><a id="report" class="card disabled" href="#"><b>会社向けに整理</b><span>個別診断レポート 19,800円</span></a></div>
+<p class="note">※削減額は入力条件に基づく試算で、成果を保証するものではありません。</p></section>
+<section class="panel"><h2>どう進む？</h2><ol><li>普段の仕事を3つ程度入力</li><li>AIが時間削減の大きい順に整理</li><li>まず1つだけ試す</li><li>数字が出たら次へ広げる</li></ol></section>
+</main><footer><div class="wrap">BreakAI Labs</div></footer>
+<template id="tpl"><div class="task"><input class="name" placeholder="業務名 例：見積もりの下書き"><div class="grid3"><label>1回（分）<input class="min" type="number" value="30" min="1"></label><label>週回数<input class="freq" type="number" value="5" min="1"></label><label>AI後（分）<input class="aft" type="number" value="10" min="0"></label></div></div></template>
+<script src="config.js"></script><script src="app.js"></script></body></html>
