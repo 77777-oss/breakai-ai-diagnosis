@@ -12,6 +12,8 @@ if '/test_' in alltext: errors.append('test Stripe link leaked')
 if '業種を選ぶ' not in html or '仕事を選ぶ' not in html or '時間を選ぶ' not in html: errors.append('three-step easy UX missing')
 if '実質時間単価' in html or 'AI後（分）' in html: errors.append('complex customer inputs remain')
 if '実際の効果' not in html: errors.append('disclosure missing')
+if 'legal.html' not in html or 'privacy.html' not in html: errors.append('legal/privacy links missing')
+if not (R/'legal.html').exists() or not (R/'privacy.html').exists(): errors.append('legal/privacy pages missing')
 if '計算の考え方' not in html: errors.append('calculation explanation missing')
 if 'id="liveCtas" class="hidden"' not in html: errors.append('prelive paid CTA must be hidden')
 if errors:
