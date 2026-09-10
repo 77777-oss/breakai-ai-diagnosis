@@ -15,6 +15,10 @@ if '実際の効果' not in html: errors.append('disclosure missing')
 if 'legal.html' not in html or 'privacy.html' not in html: errors.append('legal/privacy links missing')
 if not (R/'legal.html').exists() or not (R/'privacy.html').exists(): errors.append('legal/privacy pages missing')
 if '計算の考え方' not in html: errors.append('calculation explanation missing')
+
+if 'client_reference_id=arf_' not in js: errors.append('pain context is not carried to checkout')
+for code in ('estimate','inquiry','email','report','data','content','other'):
+ if "'"+code+"'" not in js: errors.append('missing pain code: '+code)
 if 'id="liveCtas" class="hidden"' not in html: errors.append('prelive paid CTA must be hidden')
 if errors:
  print('PUBLIC_GATE_FAIL');[print('-',e) for e in errors];raise SystemExit(1)
