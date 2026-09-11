@@ -1,0 +1,27 @@
+.sampleHeader{display:flex;justify-content:space-between;gap:16px;padding:24px 0;color:#aebfd2;font-size:14px}
+.sampleHeader a,.samplePage a:not(.btn){color:#80c9ec}
+.samplePage{padding:32px 0 12px}
+.samplePage h1{font-size:clamp(36px,7vw,58px);line-height:1.3}
+.samplePage .lead{margin-left:0;font-size:18px}
+.sampleNotice{padding:18px 20px;border:1px solid #58728e;border-radius:14px;color:#d0ddea;background:#10223a}
+.sampleNav{display:flex;flex-wrap:wrap;gap:12px;margin:24px 0}
+.sampleNav a{padding:8px 14px;border:1px solid #365675;border-radius:20px;text-decoration:none}
+.samplePage .panel h2{font-size:clamp(24px,5vw,32px);line-height:1.45;margin:12px 0 20px}
+.sampleLabel{font-size:14px;color:#80c9ec;font-weight:700}
+.sampleBox{padding:18px;background:#0b1b2e;border-radius:12px;margin:18px 0}
+.sampleBox h3{font-size:16px;margin:0 0 8px;color:#a8dffe}
+.sampleBox p{margin:0}
+.tableScroll{max-width:100%;overflow-x:auto}
+.samplePage table{width:100%;border-collapse:collapse;text-align:left;min-width:480px;font-size:15px}
+.samplePage caption{text-align:left;margin-bottom:10px;color:#aebfd2}
+.samplePage th,.samplePage td{padding:12px 10px;border-bottom:1px solid #294660}
+.samplePage td:not(:first-child){text-align:right;white-space:nowrap}
+.samplePage tfoot td{font-size:17px}
+.sampleOutput{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere;padding:20px;border-radius:12px;background:#0b1b2e;line-height:1.9}
+.sampleFacts{display:grid;gap:10px;margin:18px 0}
+.sampleFacts div{background:#0b1b2e;padding:14px;border-radius:10px}
+.sampleFacts dt{font-size:13px;color:#aebfd2}.sampleFacts dd{margin:5px 0 0;font-size:18px;font-weight:700}
+.samplePage details{border-top:1px solid #294660;padding:18px 0}.samplePage summary{cursor:pointer;font-weight:700;color:#a8dffe}
+.sampleOffer{border-bottom:1px solid #294660;padding:12px 0}.sampleOffer h3{font-size:19px}
+.samplePage .btn{margin-top:20px}.samplePage .note{color:#a9bed1}
+@media(max-width:480px){.sampleHeader{font-size:12px}.samplePage{padding-top:16px}.sampleNav{gap:8px}.sampleNav a{font-size:14px}.sampleOutput{padding:14px}.samplePage .panel{padding:20px}}
