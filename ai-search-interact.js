@@ -5,7 +5,7 @@ const labels={identity:'会社情報',service_clarity:'サービス説明',crawl
 function chat(role,text){const box=$('#guideChat');const el=document.createElement('div');el.className=`guideMsg ${role}`;el.textContent=text;box.appendChild(el);box.scrollTop=box.scrollHeight;}
 function setReply(text){const el=$('#guideReply');if(el)el.textContent=text;}
 function validUrl(text){try{const u=new URL(String(text||'').trim());return /^https?:$/.test(u.protocol)?u.href:''}catch(_){return''}}
-function answerFaq(t){t=String(t||'');if(/料金|価格|有料/.test(t))return'詳細版は先着10社19,800円、通常29,800円を予定しています。3AI×12問＝36観測で競合・引用元・誤情報まで確認します。';if(/競合|比較/.test(t))return'無料版はWebサイト側の準備度です。詳細版ではChatGPT・Gemini・Perplexityの実回答で競合比較まで行います。';if(/何が分か|わかる|内容/.test(t))return'無料で、会社情報・サービス説明・クロール基本・構造化データ・FAQ/回答情報の5項目と、優先改善点が分かります。';return'';}
+function answerFaq(t){t=String(t||'');if(/料金|価格|有料/.test(t))return'詳細版は先着10社19,800円、終了後は通常29,800円です。3AI×12問＝36観測で競合・引用元・誤情報・AI間差まで確認します。';if(/競合|比較/.test(t))return'無料版はWebサイト側の準備度です。詳細版ではChatGPT・Gemini・Perplexityの実回答で競合比較まで行います。';if(/何が分か|わかる|内容/.test(t))return'無料で、会社情報・サービス説明・クロール基本・構造化データ・FAQ/回答情報の5項目と、優先改善点が分かります。';return'';}
 function componentHtml(k,v){const pct=Math.max(0,Math.min(100,(Number(v)||0)*5));return `<div class="auditMetric"><div><b>${labels[k]||k}</b><strong>${v}/20</strong></div><span><i style="width:${pct}%"></i></span></div>`;}
 function renderAudit(d){state.audit=d;$('#auditResult').classList.remove('hidden');$('#auditScore').textContent=d.score==null?'--':`${d.score}/100`;$('#auditGrade').textContent=d.grade||'採点できませんでした';$('#auditDomain').textContent=d.final_url||state.url;$('#auditMetrics').innerHTML=Object.entries(d.components||{}).map(([k,v])=>componentHtml(k,v)).join('');$('#auditRecommendations').innerHTML=(d.recommendations||[]).map((x,i)=>`<li><b>${i+1}</b><span>${x}</span></li>`).join('')||'<li><span>大きな不足は検出されませんでした。</span></li>';$('#auditDisclosure').textContent=d.disclosure||'';$('#auditResult').scrollIntoView({behavior:'smooth',block:'start'});}
 async function runAudit(text){const u=validUrl(text);if(!u){chat('ai','https:// から始まる公開URLを貼り付けてください。');return;}state.url=u;chat('user',u);chat('ai','公開Webを取得して5項目を確認しています。少しお待ちください。');const b=$('#guideAskBtn');b.disabled=true;b.textContent='診断中…';setReply('会社情報・サービス説明・クロール・構造化データ・FAQを確認中です。');
@@ -17,5 +17,5 @@ window.addEventListener('DOMContentLoaded',()=>{
  $('#guideAskBtn')?.addEventListener('click',()=>handle($('#guideQuestion')?.value));
  $('#guideQuestion')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();handle(e.currentTarget.value);}});
  document.querySelectorAll('[data-guide]').forEach(b=>b.addEventListener('click',()=>handle(b.dataset.guide)));
- $('#paidCta')?.addEventListener('click',e=>{if(e.currentTarget.getAttribute('aria-disabled')==='true'){e.preventDefault();setReply('OpenAIとPerplexityは実測済みです。Gemini 12問と36観測レポート最終QA後に受付開始します。無料結果は今すぐ利用できます。');}});
+ $('#paidCta')?.addEventListener('click',()=>setReply('先着10社19,800円の詳細版へ進みます。会社名・サイトURL・業種・主サービスを入力し、決済後に3AI×12問の実測レポートを作成します。'));
 });
