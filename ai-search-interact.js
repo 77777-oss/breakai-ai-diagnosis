@@ -17,5 +17,5 @@ window.addEventListener('DOMContentLoaded',()=>{
  $('#guideAskBtn')?.addEventListener('click',()=>handle($('#guideQuestion')?.value));
  $('#guideQuestion')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();handle(e.currentTarget.value);}});
  document.querySelectorAll('[data-guide]').forEach(b=>b.addEventListener('click',()=>handle(b.dataset.guide)));
- $('#paidCta')?.addEventListener('click',e=>{if(e.currentTarget.getAttribute('aria-disabled')==='true'){e.preventDefault();setReply('詳細版は3AIの本番接続確認後に受付開始します。無料結果は今すぐ利用できます。');}});
+ $('#paidCta')?.addEventListener('click',e=>{if(e.currentTarget.getAttribute('aria-disabled')==='true'){e.preventDefault();setReply('OpenAIとPerplexityは実測済みです。Gemini 12問と36観測レポート最終QA後に受付開始します。無料結果は今すぐ利用できます。');}});
 });
