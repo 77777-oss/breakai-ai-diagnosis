@@ -63,6 +63,8 @@
     if(/下にスクロール|下へスクロール|下を見/.test(n)){scrollBy({top:Math.round(innerHeight*.72),behavior:'smooth'});return true}
     if(/上にスクロール|上へスクロール|上を見/.test(n)){scrollBy({top:-Math.round(innerHeight*.72),behavior:'smooth'});return true}
     if(/更新して|再読み込み|リロード/.test(n)){location.reload();return true}
+    const systemOpen=/(SCOUTER|スカウター|MATCH|マッチ|FIX|フィックス|AIKANO|アイカノ|CareMemory|ケアメモリー|BreakAIPlatform|プラットフォーム|FinancialAI|ファイナンシャル(?:AI|システム)|金融システム|BusinessNetwork|ビジネスネットワーク|自走収益工場|自動収益工場|GEO|ジオ|AEO|エーイーオー).*(開いて|開く|行って|移動して|見せて)/i.test(n);
+    if(systemOpen){show('司令塔経由でシステムを開きます');setTimeout(()=>toCommand(text),120);return true}
     if(clickVisible(text))return true;
     if(/調べ|検索|教え|まとめ|確認|分析|おすすめ|候補|助成金|補助金|状況/.test(n)){show('司令塔AIで調べます');setTimeout(()=>toCommand(text),180);return true}
     show(`「${text}」を認識しました。画面名＋「開いて」、または「司令塔に戻って」と話せます。`);return false;
