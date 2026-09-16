@@ -47,7 +47,7 @@
   document.documentElement.appendChild(host);
   const $=s=>sh.querySelector(s),box=$('#box'),mic=$('#mic'),handButton=$('#hand'),handPointer=$('#hand-pointer'),handVideo=$('#hand-video'),status=$('#status');
   const show=(text,wide=true)=>{status.textContent=String(text||'').slice(0,110);box.dataset.wide=wide?'1':'0';clearTimeout(show.t);show.t=setTimeout(()=>{box.dataset.wide='0'},4200)};
-  const toCommand=(query='')=>{const u=new URL(COMMAND);if(query)u.searchParams.set('voice_query',query);u.searchParams.set('voice_from',location.href.slice(0,800));if(window.top!==window.self){try{window.top.location.assign(u.toString());return}catch(_){ }}location.assign(u.toString())};
+  const toCommand=(query='')=>{const u=new URL(COMMAND);if(query)u.searchParams.set('voice_query',query);u.searchParams.set('voice_from',location.href.slice(0,800));if(handEnabled||handPersisted)u.searchParams.set('breakai_hand','1');if(window.top!==window.self){try{window.top.location.assign(u.toString());return}catch(_){ }}location.assign(u.toString())};
   $('#back').onclick=()=>{show('戻ります');if(history.length>1)history.back();else toCommand()};
   $('#forward').onclick=()=>{show('進みます');history.forward()};
   $('#home').onclick=()=>{show('司令塔へ戻ります');toCommand()};
