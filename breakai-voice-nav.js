@@ -10,15 +10,17 @@
   const HAND_KEY='breakai.universalHand.enabled';
   const MP_BASE=COMMAND_ORIGIN+'/connected-assets/mediapipe';
   const q=new URLSearchParams(location.search);
-  const hashVoice=/(?:^|[&#])breakai_voice=1(?:$|[&#])/.test(location.hash);
+  const fragment=new URLSearchParams(location.hash.replace(/^#/,''));
+  const hashVoice=fragment.get('breakai_voice')==='1';
   const launchVoice=q.get('breakai_voice')==='1'||hashVoice;
-  const incomingToken=String(q.get('breakai_voice_token')||'').trim();
-  const incomingProject=String(q.get('breakai_voice_project')||'').trim();
-  const incomingHand=q.get('breakai_hand')==='1';
+  const incomingToken=String(fragment.get('breakai_voice_token')||q.get('breakai_voice_token')||'').trim();
+  const incomingProject=String(q.get('breakai_voice_project')||fragment.get('breakai_voice_project')||'').trim();
+  const incomingHand=q.get('breakai_hand')==='1'||fragment.get('breakai_hand')==='1';
   if(launchVoice){
     try{sessionStorage.setItem(KEY,'1');if(incomingToken)sessionStorage.setItem(TOKEN_KEY,incomingToken);if(incomingProject)sessionStorage.setItem(PROJECT_KEY,incomingProject);if(incomingHand)sessionStorage.setItem(HAND_KEY,'1')}catch(_){ }
     q.delete('breakai_voice');q.delete('breakai_voice_token');q.delete('breakai_voice_project');q.delete('breakai_hand');
-    const cleanHash=hashVoice?'':location.hash;
+    fragment.delete('breakai_voice');fragment.delete('breakai_voice_token');fragment.delete('breakai_voice_project');fragment.delete('breakai_hand');
+    const cleanHash=fragment.toString()?`#${fragment}`:'';
     const clean=location.pathname+(q.toString()?`?${q}`:'')+cleanHash;
     try{history.replaceState(history.state,'',clean)}catch(_){ }
   }
