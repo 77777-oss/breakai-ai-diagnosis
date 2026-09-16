@@ -9,6 +9,8 @@
   const PROJECT_KEY='breakai.connectedVoice.project';
   const HAND_KEY='breakai.universalHand.enabled';
   const MP_BASE=COMMAND_ORIGIN+'/connected-assets/mediapipe';
+  const CHAT_KEY_PREFIX='breakai.connectedConversation.';
+  const VOICE_HOME_PHRASE='司令塔に戻って';
   const q=new URLSearchParams(location.search);
   const fragment=new URLSearchParams(location.hash.replace(/^#/,''));
   const hashVoice=fragment.get('breakai_voice')==='1';
@@ -44,16 +46,34 @@
     #hand-pointer.blocked{border-color:#ff9c9c;box-shadow:0 0 0 5px rgba(255,90,90,.12)}
     #status{display:none;max-width:290px;font-size:11px;line-height:1.35;color:#b9e9f5;padding:0 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .box[data-wide="1"] #status{display:block}
-    @media(max-width:760px){.box{gap:4px;padding:6px;border-radius:16px}button{height:42px;min-width:42px;padding:0 9px;font-size:12px}#status{max-width:135px}.desktop-label{display:none}}
-  </style><div class="box" id="box"><button id="back" title="戻る">←<span class="desktop-label"> 戻る</span></button><button id="forward" title="進む">→<span class="desktop-label"> 進む</span></button><button id="home" title="司令塔へ戻る">⌂ 司令塔</button><button id="mic" title="音声操作">🎤 音声</button><button id="hand" title="カメラ手操作">🖐 手操作</button><span id="status" aria-live="polite">音声待機</span></div><div id="hand-pointer" aria-hidden="true"></div><video id="hand-video" muted playsinline style="display:none"></video>`;
+    #chat[data-live="1"]{background:linear-gradient(135deg,#3d478d,#256c9c);border-color:#85e8ff}
+    #conversation{position:fixed;left:0;bottom:58px;width:min(430px,calc(100vw - 20px));max-height:min(62vh,620px);display:none;flex-direction:column;border:1px solid rgba(99,221,255,.38);border-radius:18px;background:rgba(2,15,35,.97);box-shadow:0 18px 60px rgba(0,0,0,.5);overflow:hidden;color:#ecfeff}
+    #conversation.open{display:flex}.chat-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid rgba(99,221,255,.18)}.chat-head b{font-size:13px}.chat-head small{display:block;color:#8dc9d9;font-size:9px;margin-top:2px}.chat-head button{height:34px;min-width:36px;padding:0 9px}.chat-log{padding:10px;overflow:auto;min-height:120px;max-height:380px;display:flex;flex-direction:column;gap:8px}.msg{font-size:12px;line-height:1.55;padding:8px 10px;border-radius:12px;white-space:pre-wrap;word-break:break-word}.msg.user{align-self:flex-end;background:rgba(24,91,129,.72);max-width:88%}.msg.ai{align-self:stretch;background:rgba(12,39,65,.82);border:1px solid rgba(101,218,255,.13)}.msg.system{color:#a9cad4;background:rgba(255,255,255,.04)}.sources{display:flex;flex-direction:column;gap:5px;margin-top:7px}.sources a{display:block;color:#94efff;text-decoration:none;padding:6px 7px;border:1px solid rgba(92,225,255,.18);border-radius:8px;background:rgba(5,41,63,.62);font-size:11px}.chat-form{display:flex;gap:6px;padding:9px;border-top:1px solid rgba(99,221,255,.18)}.chat-form input{min-width:0;flex:1;height:42px;border:1px solid rgba(99,221,255,.24);border-radius:10px;background:#061426;color:#fff;font-size:14px;padding:0 10px;outline:none}.chat-form input:focus{border-color:#6cecff}.chat-form button{height:42px;min-width:64px}.thinking{opacity:.72}
+    @media(max-width:760px){.box{gap:4px;padding:6px;border-radius:16px}button{height:42px;min-width:42px;padding:0 9px;font-size:12px}#status{max-width:135px}.desktop-label{display:none}#conversation{width:calc(100vw - 12px);left:-4px;bottom:56px;max-height:66vh}.chat-log{max-height:42vh}.chat-form input{font-size:16px}}
+  </style><div class="box" id="box"><button id="back" title="戻る">←<span class="desktop-label"> 戻る</span></button><button id="forward" title="進む">→<span class="desktop-label"> 進む</span></button><button id="home" title="司令塔へ戻る">⌂ 司令塔</button><button id="chat" title="この画面でAIと会話">💬 AI</button><button id="mic" title="音声操作">🎤 音声</button><button id="hand" title="カメラ手操作">🖐 手操作</button><span id="status" aria-live="polite">音声待機</span></div><section id="conversation" aria-label="接続システムAI会話"><div class="chat-head"><div><b id="chat-title">接続システムAI</b><small>この画面のまま相談・検索・比較・詳細確認</small></div><button id="chat-close" title="閉じる">×</button></div><div id="chat-log" class="chat-log" aria-live="polite"></div><form id="chat-form" class="chat-form"><input id="chat-input" autocomplete="off" placeholder="この画面について質問"><button type="submit">送信</button></form></section><div id="hand-pointer" aria-hidden="true"></div><video id="hand-video" muted playsinline style="display:none"></video>`;
   document.documentElement.appendChild(host);
-  const $=s=>sh.querySelector(s),box=$('#box'),mic=$('#mic'),handButton=$('#hand'),handPointer=$('#hand-pointer'),handVideo=$('#hand-video'),status=$('#status');
+  const $=s=>sh.querySelector(s),box=$('#box'),mic=$('#mic'),chatButton=$('#chat'),conversation=$('#conversation'),chatLog=$('#chat-log'),chatInput=$('#chat-input'),handButton=$('#hand'),handPointer=$('#hand-pointer'),handVideo=$('#hand-video'),status=$('#status');
   const show=(text,wide=true)=>{status.textContent=String(text||'').slice(0,110);box.dataset.wide=wide?'1':'0';clearTimeout(show.t);show.t=setTimeout(()=>{box.dataset.wide='0'},4200)};
   const toCommand=(query='')=>{const u=new URL(COMMAND);if(query)u.searchParams.set('voice_query',query);u.searchParams.set('voice_from',location.href.slice(0,800));if(handEnabled||handPersisted)u.searchParams.set('breakai_hand','1');if(window.top!==window.self){try{window.top.location.assign(u.toString());return}catch(_){ }}location.assign(u.toString())};
   $('#back').onclick=()=>{show('戻ります');if(history.length>1)history.back();else toCommand()};
   $('#forward').onclick=()=>{show('進みます');history.forward()};
   $('#home').onclick=()=>{show('司令塔へ戻ります');toCommand()};
 
+  const projectNames={radar:'SCOUTER',ses:'MATCH',verify:'FIX',aikano:'AIKANO',platform:'BreakAI Platform',financial_ai:'Financial AI',auto_revenue:'自走収益工場',geo_aeo:'GEO / AEO',care_memory:'Care Memory',business_network:'Business Network',website:'BreakAI HP'};
+  let chatHistory=[],lastSources=[],chatBusy=false,isSpeaking=false,replyAudio=null;
+  const chatKey=()=>CHAT_KEY_PREFIX+(projectId||'unknown');
+  function loadChat(){try{const v=JSON.parse(sessionStorage.getItem(chatKey())||'[]');if(Array.isArray(v))chatHistory=v.slice(-12)}catch(_){chatHistory=[]}}
+  function saveChat(){try{sessionStorage.setItem(chatKey(),JSON.stringify(chatHistory.slice(-12)))}catch(_){ }}
+  function openChat(){conversation.classList.add('open');chatButton.dataset.live='1';$('#chat-title').textContent=(projectNames[projectId]||'接続システム')+' AI';renderChat();setTimeout(()=>chatInput.focus(),0)}
+  function closeChat(){conversation.classList.remove('open');chatButton.dataset.live='0'}
+  function renderChat(){chatLog.innerHTML='';for(const row of chatHistory.slice(-10)){const d=document.createElement('div');d.className='msg '+(row.role==='user'?'user':row.role==='system'?'system':'ai');d.textContent=String(row.content||'');if(row.role!=='user'&&Array.isArray(row.sources)&&row.sources.length){const src=document.createElement('div');src.className='sources';row.sources.slice(0,5).forEach((x,i)=>{const a=document.createElement('a');a.href=String(x.url||'#');a.target='_blank';a.rel='noopener';a.textContent=`${i+1}. ${String(x.title||'公式・参考情報').slice(0,100)}`;src.append(a)});d.append(src)}chatLog.append(d)}chatLog.scrollTop=chatLog.scrollHeight}
+  function pushChat(role,content,sources=[]){chatHistory.push({role,content:String(content||'').slice(0,7000),sources:(sources||[]).slice(0,8)});chatHistory=chatHistory.slice(-12);saveChat();renderChat()}
+  function sourceIndex(text){const n=String(text||'');const m=n.match(/([1-9１-９])\s*番/);if(!m)return 0;const z='１２３４５６７８９'.indexOf(m[1]);return z>=0?z:Number(m[1])-1}
+  function openRememberedSource(text){if(!lastSources.length||!/開いて|開く|公式|ページ/.test(String(text||'')))return false;const i=Math.max(0,Math.min(lastSources.length-1,sourceIndex(text))),src=lastSources[i];if(!src?.url)return false;window.open(src.url,'_blank','noopener');show(`${i+1}番の情報を開きます`);return true}
+  function handleConnectedAction(action){if(!action)return;if(action.requires_confirmation){pushChat('system','この操作は外部への影響があるため、司令塔のHuman Gateで確認が必要です。');return}if(action.type==='workspace_back'){history.back();return}if(action.type==='open_workspace'&&action.project_id&&action.project_id!==projectId){toCommand(`${action.project_id}を開いて`);return}}
+  async function speakConnected(text){if(!voiceToken||!text||isSpeaking)return;isSpeaking=true;try{const r=await fetch(COMMAND_ORIGIN+'/api/connected-speech',{method:'POST',headers:{'Content-Type':'application/json','X-BreakAI-Voice-Token':voiceToken,'X-BreakAI-Project':projectId},body:JSON.stringify({text:String(text).slice(0,900)}),mode:'cors',cache:'no-store'});if(!r.ok)return;const blob=await r.blob();replyAudio?.pause();replyAudio=new Audio(URL.createObjectURL(blob));await replyAudio.play();await new Promise(res=>{replyAudio.onended=res;replyAudio.onerror=res})}catch(_){ }finally{isSpeaking=false}}
+  async function connectedAsk(raw){const text=String(raw||'').trim();if(!text||chatBusy)return false;if(!voiceToken||!projectId){toCommand(text);return true}openChat();const prior=chatHistory.slice(-10);pushChat('user',text);chatBusy=true;show('この画面でAIが確認中…');const wait=document.createElement('div');wait.className='msg ai thinking';wait.textContent='確認しています…';chatLog.append(wait);chatLog.scrollTop=chatLog.scrollHeight;try{const r=await fetch(COMMAND_ORIGIN+'/api/connected-assist',{method:'POST',headers:{'Content-Type':'application/json','X-BreakAI-Voice-Token':voiceToken,'X-BreakAI-Project':projectId},body:JSON.stringify({message:text,history:prior,page:{path:location.pathname+location.search,title:document.title}}),mode:'cors',cache:'no-store'});const d=await r.json().catch(()=>({}));wait.remove();if(!r.ok)throw new Error(d.detail||d.error||'CONNECTED_ASSIST_FAILED');lastSources=Array.isArray(d.sources)?d.sources:[];pushChat('ai',d.reply||'確認結果を表示しました。',lastSources);handleConnectedAction(d.action);show('回答をこの画面に表示しました');void speakConnected(d.speech_text||d.reply||'')}catch(e){wait.remove();pushChat('system',`確認できませんでした: ${String(e.message||e).slice(0,120)}`);show('AI接続を確認してください')}finally{chatBusy=false}return true}
+  chatButton.onclick=()=>conversation.classList.contains('open')?closeChat():openChat();$('#chat-close').onclick=closeChat;$('#chat-form').addEventListener('submit',e=>{e.preventDefault();const v=chatInput.value.trim();if(!v)return;chatInput.value='';void connectedAsk(v)});loadChat();if(chatHistory.length)renderChat();
   const normalize=t=>String(t||'').replace(/[\s　]+/g,'').replace(/指令塔|司令棟|司令等|司令東|司令党/g,'司令塔').replace(/ファイナンシャルシステム|ファイナンスシステム|金融システム/g,'FinancialAI').replace(/スカター|スカウタ/g,'SCOUTER');
   const dangerous=/削除|消去|送信|決済|支払|購入|発注|本番反映|デプロイ|公開|投稿|保存|登録|実行|開始|停止|オン|オフ|ON|OFF/i;
   function visible(el){const r=el.getBoundingClientRect(),s=getComputedStyle(el);return r.width>2&&r.height>2&&s.display!=='none'&&s.visibility!=='hidden'&&s.pointerEvents!=='none'}
@@ -75,11 +95,12 @@
     if(/下にスクロール|下へスクロール|下を見/.test(n)){scrollBy({top:Math.round(innerHeight*.72),behavior:'smooth'});return true}
     if(/上にスクロール|上へスクロール|上を見/.test(n)){scrollBy({top:-Math.round(innerHeight*.72),behavior:'smooth'});return true}
     if(/更新して|再読み込み|リロード/.test(n)){location.reload();return true}
-    const systemOpen=/(SCOUTER|スカウター|MATCH|マッチ|FIX|フィックス|AIKANO|アイカノ|CareMemory|ケアメモリー|BreakAIPlatform|プラットフォーム|FinancialAI|ファイナンシャル(?:AI|システム)|金融システム|BusinessNetwork|ビジネスネットワーク|自走収益工場|自動収益工場|GEO|ジオ|AEO|エーイーオー).*(開いて|開く|行って|移動して|見せて)/i.test(n);
+    const systemOpen=/(SCOUTER|スカウター|MATCH|マッチ|FIX|フィックス|AIKANO|アイカノ|CareMemory|ケアメモリー|BreakAIPlatform|プラットフォーム|FinancialAI|ファイナンシャル(?:AI|システム)|金融システム|BusinessNetwork|ビジネスネットワーク|自走収益工場|自動収益工場|GEO|ジオ|AEO|エーイーオー|BreakAIHP|ホームページ|会社HP|コーポレートサイト|HP).*(開いて|開く|行って|移動して|見せて)/i.test(n);
     if(systemOpen){show('司令塔経由でシステムを開きます');setTimeout(()=>toCommand(text),80);return true}
     if(clickVisible(text))return true;
-    if(/調べ|検索|教え|まとめ|確認|分析|おすすめ|候補|助成金|補助金|状況/.test(n)){show('司令塔AIで調べます');setTimeout(()=>toCommand(text),100);return true}
-    show(`「${text}」を認識しました。画面名＋「開いて」、または「司令塔に戻って」と話せます。`);return false;
+    if(openRememberedSource(text))return true;
+    if(isSpeaking){show('回答中です',false);return true}
+    void connectedAsk(text);return true;
   }
 
 
@@ -136,5 +157,5 @@
   try{if(window.parent!==window)window.parent.postMessage({type:'breakai-nav-ready',projectId},COMMAND_ORIGIN)}catch(_){ }
   if(launchVoice||persisted)setTimeout(()=>start(true),350);
   if(handPersisted)setTimeout(()=>void startHand(true),700);
-  window.BreakAIVoiceNav={start,stop,command,toCommand,startHand,stopHand};
+  window.BreakAIVoiceNav={start,stop,command,toCommand,startHand,stopHand,connectedAsk,openChat,closeChat};
 })();
