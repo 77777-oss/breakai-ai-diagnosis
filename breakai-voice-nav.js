@@ -54,7 +54,12 @@
   document.documentElement.appendChild(host);
   const $=s=>sh.querySelector(s),box=$('#box'),mic=$('#mic'),chatButton=$('#chat'),conversation=$('#conversation'),chatLog=$('#chat-log'),chatInput=$('#chat-input'),handButton=$('#hand'),handPointer=$('#hand-pointer'),handVideo=$('#hand-video'),status=$('#status');
   const show=(text,wide=true)=>{status.textContent=String(text||'').slice(0,110);box.dataset.wide=wide?'1':'0';clearTimeout(show.t);show.t=setTimeout(()=>{box.dataset.wide='0'},4200)};
-  const toCommand=(query='')=>{const u=new URL(COMMAND);if(query)u.searchParams.set('voice_query',query);u.searchParams.set('voice_from',location.href.slice(0,800));if(handEnabled||handPersisted)u.searchParams.set('breakai_hand','1');if(window.top!==window.self){try{window.top.location.assign(u.toString());return}catch(_){ }}location.assign(u.toString())};
+  function cleanReturnSource(){try{const src=new URL(location.href);return (src.origin+src.pathname).slice(0,800)}catch(_){return ''}}
+  const toCommand=(query='')=>{
+    const u=new URL(COMMAND);if(query)u.searchParams.set('voice_query',query);const src=cleanReturnSource();if(src)u.searchParams.set('voice_from',src);if(handEnabled||handPersisted)u.searchParams.set('breakai_hand','1');
+    if(window.parent!==window){try{window.parent.postMessage({type:'breakai-nav-request',action:'home',url:u.toString(),projectId},COMMAND_ORIGIN);show('司令塔へ戻ります');return}catch(_){ }}
+    location.assign(u.toString())
+  };
   $('#back').onclick=()=>{show('戻ります');if(history.length>1)history.back();else toCommand()};
   $('#forward').onclick=()=>{show('進みます');history.forward()};
   $('#home').onclick=()=>{show('司令塔へ戻ります');toCommand()};
@@ -74,7 +79,10 @@
   async function speakConnected(text){if(!voiceToken||!text||isSpeaking)return;isSpeaking=true;try{const r=await fetch(COMMAND_ORIGIN+'/api/connected-speech',{method:'POST',headers:{'Content-Type':'application/json','X-BreakAI-Voice-Token':voiceToken,'X-BreakAI-Project':projectId},body:JSON.stringify({text:String(text).slice(0,900)}),mode:'cors',cache:'no-store'});if(!r.ok)return;const blob=await r.blob();replyAudio?.pause();replyAudio=new Audio(URL.createObjectURL(blob));await replyAudio.play();await new Promise(res=>{replyAudio.onended=res;replyAudio.onerror=res})}catch(_){ }finally{isSpeaking=false}}
   async function connectedAsk(raw){const text=String(raw||'').trim();if(!text||chatBusy)return false;if(!voiceToken||!projectId){toCommand(text);return true}openChat();const prior=chatHistory.slice(-10);pushChat('user',text);chatBusy=true;show('この画面でAIが確認中…');const wait=document.createElement('div');wait.className='msg ai thinking';wait.textContent='確認しています…';chatLog.append(wait);chatLog.scrollTop=chatLog.scrollHeight;try{const r=await fetch(COMMAND_ORIGIN+'/api/connected-assist',{method:'POST',headers:{'Content-Type':'application/json','X-BreakAI-Voice-Token':voiceToken,'X-BreakAI-Project':projectId},body:JSON.stringify({message:text,history:prior,page:{path:location.pathname+location.search,title:document.title}}),mode:'cors',cache:'no-store'});const d=await r.json().catch(()=>({}));wait.remove();if(!r.ok)throw new Error(d.detail||d.error||'CONNECTED_ASSIST_FAILED');lastSources=Array.isArray(d.sources)?d.sources:[];pushChat('ai',d.reply||'確認結果を表示しました。',lastSources);handleConnectedAction(d.action);show('回答をこの画面に表示しました');void speakConnected(d.speech_text||d.reply||'')}catch(e){wait.remove();pushChat('system',`確認できませんでした: ${String(e.message||e).slice(0,120)}`);show('AI接続を確認してください')}finally{chatBusy=false}return true}
   chatButton.onclick=()=>conversation.classList.contains('open')?closeChat():openChat();$('#chat-close').onclick=closeChat;$('#chat-form').addEventListener('submit',e=>{e.preventDefault();const v=chatInput.value.trim();if(!v)return;chatInput.value='';void connectedAsk(v)});loadChat();if(chatHistory.length)renderChat();
-  const normalize=t=>String(t||'').replace(/[\s　]+/g,'').replace(/指令塔|司令棟|司令等|司令東|司令党/g,'司令塔').replace(/ファイナンシャルシステム|ファイナンスシステム|金融システム/g,'FinancialAI').replace(/スカター|スカウタ/g,'SCOUTER');
+  const normalize=t=>String(t||'').replace(/[\s　]+/g,'').replace(/指令塔|指令等|指令棟|司令棟|司令等|司令東|司令党|司令と|司令塔ー/g,'司令塔').replace(/ファイナンシャルシステム|ファイナンスシステム|金融システム/g,'FinancialAI').replace(/スカター|スカウタ/g,'SCOUTER');
+  function navigationIntent(raw){const n=normalize(raw).replace(/[。、,.!！?？・]/g,'');if(!n)return '';if(/^(?:司令塔|ホーム)$/.test(n)||((n.includes('司令塔')||n.includes('ホーム'))&&/(戻|帰|開|行|移動|トップ)/.test(n)))return 'home';if(/前の画面|一つ戻|ひとつ戻|戻って|戻る|バック/.test(n))return 'back';if(/次の画面|一つ進|ひとつ進|進んで|進む|フォワード/.test(n))return 'forward';if(/一番上|最上部|トップへ/.test(n))return 'top';if(/一番下|最下部|下まで/.test(n))return 'bottom';if(/下にスクロール|下へスクロール|下を見/.test(n))return 'scroll_down';if(/上にスクロール|上へスクロール|上を見/.test(n))return 'scroll_up';return ''}
+  let lastNavigationIntent='',lastNavigationAt=0;
+  function executeNavigationIntent(intent){const now=performance.now();if(!intent)return false;if(intent===lastNavigationIntent&&now-lastNavigationAt<1000)return true;lastNavigationIntent=intent;lastNavigationAt=now;if(intent==='home'){show('司令塔へ戻ります');toCommand();return true}if(intent==='back'){show('戻ります');if(history.length>1)history.back();else toCommand();return true}if(intent==='forward'){show('進みます');history.forward();return true}if(intent==='top'){scrollTo({top:0,behavior:'smooth'});return true}if(intent==='bottom'){scrollTo({top:document.documentElement.scrollHeight,behavior:'smooth'});return true}if(intent==='scroll_down'){scrollBy({top:Math.round(innerHeight*.72),behavior:'smooth'});return true}if(intent==='scroll_up'){scrollBy({top:-Math.round(innerHeight*.72),behavior:'smooth'});return true}return false}
   const dangerous=/削除|消去|送信|決済|支払|購入|発注|本番反映|デプロイ|公開|投稿|保存|登録|実行|開始|停止|オン|オフ/i;
   const dangerousToggle=/\b(?:ON|OFF)\b/i;
   function visible(el){const r=el.getBoundingClientRect(),s=getComputedStyle(el);return r.width>2&&r.height>2&&s.display!=='none'&&s.visibility!=='hidden'&&s.pointerEvents!=='none'}
@@ -88,13 +96,7 @@
   function command(raw){
     const text=String(raw||'').trim(),n=normalize(text);if(!n)return false;show(`認識: ${text}`);
     if(/音声(停止|やめ|終了)|マイク(停止|オフ)/.test(n)){stop();return true}
-    if((n.includes('司令塔')&&(n.includes('戻')||n.includes('開')||n.includes('行')||n.includes('ホーム'))) || /^(司令塔|ホーム)$/.test(n)){toCommand();return true}
-    if(/前の画面|一つ戻|ひとつ戻|戻って|戻る|バック/.test(n)){if(history.length>1)history.back();else toCommand();return true}
-    if(/次の画面|一つ進|ひとつ進|進んで|進む|フォワード/.test(n)){history.forward();return true}
-    if(/一番上|最上部|トップへ/.test(n)){scrollTo({top:0,behavior:'smooth'});return true}
-    if(/一番下|最下部|下まで/.test(n)){scrollTo({top:document.documentElement.scrollHeight,behavior:'smooth'});return true}
-    if(/下にスクロール|下へスクロール|下を見/.test(n)){scrollBy({top:Math.round(innerHeight*.72),behavior:'smooth'});return true}
-    if(/上にスクロール|上へスクロール|上を見/.test(n)){scrollBy({top:-Math.round(innerHeight*.72),behavior:'smooth'});return true}
+    const navIntent=navigationIntent(text);if(navIntent)return executeNavigationIntent(navIntent);
     if(/更新して|再読み込み|リロード/.test(n)){show('再読み込みは誤操作防止のため手動ボタンで確認してください');return true}
     const systemOpen=/(SCOUTER|スカウター|MATCH|マッチ|FIX|フィックス|AIKANO|アイカノ|CareMemory|ケアメモリー|BreakAIPlatform|プラットフォーム|FinancialAI|ファイナンシャル(?:AI|システム)|金融システム|BusinessNetwork|ビジネスネットワーク|自走収益工場|自動収益工場|GEO|ジオ|AEO|エーイーオー|BreakAIHP|ホームページ|会社HP|コーポレートサイト|HP).*(開いて|開く|行って|移動して|見せて)/i.test(n);
     if(systemOpen){show('司令塔経由でシステムを開きます');setTimeout(()=>toCommand(text),80);return true}
@@ -126,10 +128,13 @@
   handButton.onclick=()=>handEnabled?stopHand(true):void startHand(false);
 
   let enabled=false,restartTimer=null,mediaStream=null,audioContext=null,analyser=null,mediaRecorder=null,chunks=[],voiceStartedAt=0,lastSpeechAt=0,hadSpeech=false,peak=0,precisionBusy=false;
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,navRec=null,navRecRestart=null;
+  function handleTranscript(text,source='voice'){const value=String(text||'').trim();if(!value)return false;show(`${source==='spotter'?'音声操作':'認識'}: ${value}`);return command(value)}
+  function stopNavigationSpotter(){clearTimeout(navRecRestart);navRecRestart=null;try{navRec?.stop()}catch(_){ }navRec=null}
+  function startNavigationSpotter(){if(!SR||navRec||!enabled||!voiceToken)return;try{navRec=new SR();navRec.lang='ja-JP';navRec.continuous=true;navRec.interimResults=true;navRec.maxAlternatives=5;navRec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];for(let j=0;j<r.length;j++){const t=String(r[j]?.transcript||'').trim(),intent=navigationIntent(t);if(intent){executeNavigationIntent(intent);return}}}};navRec.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed')stopNavigationSpotter()};navRec.onend=()=>{navRec=null;if(enabled&&voiceToken){clearTimeout(navRecRestart);navRecRestart=setTimeout(startNavigationSpotter,250)}};navRec.start()}catch(_){navRec=null}}
   function setState(on,mode=''){enabled=on;mic.dataset.live=on?'1':'0';mic.dataset.mode=mode;mic.textContent=on?'🎙 音声中':'🎤 音声'}
   function cleanupMedia(){try{mediaRecorder&&mediaRecorder.state!=='inactive'&&mediaRecorder.stop()}catch(_){ }mediaRecorder=null;mediaStream?.getTracks().forEach(t=>t.stop());mediaStream=null;if(audioContext){audioContext.close().catch(()=>{})}audioContext=null;analyser=null}
-  function stop(){enabled=false;try{sessionStorage.setItem(KEY,'0')}catch(_){ }clearTimeout(restartTimer);try{rec?.stop()}catch(_){ }cleanupMedia();setState(false);show('音声操作を停止しました')}
+  function stop(){enabled=false;stopNavigationSpotter();try{sessionStorage.setItem(KEY,'0')}catch(_){ }clearTimeout(restartTimer);try{rec?.stop()}catch(_){ }cleanupMedia();setState(false);show('音声操作を停止しました')}
   async function transcribePrecision(blob,durationMs){
     const endpoint=COMMAND_ORIGIN+'/api/connected-transcribe';
     const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':blob.type||'audio/webm','X-BreakAI-Voice-Token':voiceToken,'X-BreakAI-Project':projectId,'X-BreakAI-Audio-Ms':String(durationMs)},body:blob,mode:'cors',cache:'no-store'});
@@ -141,15 +146,15 @@
   function beginPrecisionUtterance(){
     if(!enabled||!mediaStream||precisionBusy)return;const type=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm';chunks=[];hadSpeech=false;peak=0;voiceStartedAt=performance.now();lastSpeechAt=voiceStartedAt;mediaRecorder=new MediaRecorder(mediaStream,{mimeType:type});
     mediaRecorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};
-    mediaRecorder.onstop=async()=>{const durationMs=Math.max(0,Math.round(performance.now()-voiceStartedAt)),heard=hadSpeech,strong=peak>=.008,blob=new Blob(chunks,{type});if(!enabled)return;if(!heard||!strong){setTimeout(beginPrecisionUtterance,80);return}precisionBusy=true;show('高精度認識中…');try{const text=await transcribePrecision(blob,durationMs);if(text)command(text)}catch(e){show('高精度認識を再接続します');if(String(e.message).includes('UNAUTHORIZED')){voiceToken='';try{sessionStorage.removeItem(TOKEN_KEY)}catch(_){ }}}finally{precisionBusy=false;if(enabled)setTimeout(()=>voiceToken?beginPrecisionUtterance():startWebSpeech(true),100)}};
+    mediaRecorder.onstop=async()=>{const durationMs=Math.max(0,Math.round(performance.now()-voiceStartedAt)),heard=hadSpeech,strong=peak>=.008,blob=new Blob(chunks,{type});if(!enabled)return;if(!heard||!strong){setTimeout(beginPrecisionUtterance,80);return}precisionBusy=true;show('高精度認識中…');try{const text=await transcribePrecision(blob,durationMs);if(text)handleTranscript(text,'precision')}catch(e){show('高精度認識を再接続します');if(String(e.message).includes('UNAUTHORIZED')){voiceToken='';try{sessionStorage.removeItem(TOKEN_KEY)}catch(_){ }}}finally{precisionBusy=false;if(enabled)setTimeout(()=>voiceToken?beginPrecisionUtterance():startWebSpeech(true),100)}};
     mediaRecorder.start(100);setState(true,'precision');requestAnimationFrame(monitorPrecision);
   }
   async function startPrecision(fromAuto=false){
-    try{mediaStream=mediaStream||await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});const AC=window.AudioContext||window.webkitAudioContext;audioContext=audioContext||new AC();analyser=audioContext.createAnalyser();analyser.fftSize=1024;audioContext.createMediaStreamSource(mediaStream).connect(analyser);setState(true,'precision');show(fromAuto?'高精度音声を引き継ぎました':'高精度音声を開始しました');beginPrecisionUtterance()}catch(e){if(e?.name==='NotAllowedError'){enabled=false;setState(false);show('マイク許可が必要です。🎤音声を押してください。');return}show('高精度音声を開始できないためブラウザ認識へ切替');startWebSpeech(true)}
+    try{mediaStream=mediaStream||await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});const AC=window.AudioContext||window.webkitAudioContext;audioContext=audioContext||new AC();analyser=audioContext.createAnalyser();analyser.fftSize=1024;audioContext.createMediaStreamSource(mediaStream).connect(analyser);setState(true,'precision');show(fromAuto?'高精度音声を引き継ぎました':'高精度音声を開始しました');startNavigationSpotter();beginPrecisionUtterance()}catch(e){if(e?.name==='NotAllowedError'){enabled=false;setState(false);show('マイク許可が必要です。🎤音声を押してください。');return}show('高精度音声を開始できないためブラウザ認識へ切替');startWebSpeech(true)}
   }
   function startWebSpeech(fromAuto=false){
     if(!SR){enabled=false;setState(false);show('このブラウザは音声操作に未対応です。手動ボタンは使えます。');return}enabled=true;try{sessionStorage.setItem(KEY,'1')}catch(_){ }
-    if(!rec){rec=new SR();rec.lang='ja-JP';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=5;rec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(!r.isFinal)continue;let best=r[0]?.transcript||'';for(let j=0;j<r.length;j++){const t=r[j]?.transcript||'';if(/司令塔|戻|進|開|スクロール|調べ|検索|Financial|ファイナンシャル|スカウター|MATCH|マッチ/i.test(t)){best=t;break}}command(best)}};rec.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){enabled=false;setState(false);show('マイク許可が必要です。🎤音声を押してください。');return}if(e.error!=='no-speech')show(`音声再接続: ${e.error}`)};rec.onend=()=>{if(enabled&&!voiceToken){clearTimeout(restartTimer);restartTimer=setTimeout(()=>{try{rec.start()}catch(_){ }},150)}}}
+    if(!rec){rec=new SR();rec.lang='ja-JP';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=5;rec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(!r.isFinal)continue;let best=r[0]?.transcript||'';for(let j=0;j<r.length;j++){const t=r[j]?.transcript||'';if(/司令塔|戻|進|開|スクロール|調べ|検索|Financial|ファイナンシャル|スカウター|MATCH|マッチ/i.test(t)){best=t;break}}handleTranscript(best,'browser')}};rec.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){enabled=false;setState(false);show('マイク許可が必要です。🎤音声を押してください。');return}if(e.error!=='no-speech')show(`音声再接続: ${e.error}`)};rec.onend=()=>{if(enabled&&!voiceToken){clearTimeout(restartTimer);restartTimer=setTimeout(()=>{try{rec.start()}catch(_){ }},150)}}}
     setState(true,'browser');show(fromAuto?'音声操作を引き継ぎました':'音声操作を開始しました');try{rec.start()}catch(_){ }
   }
   function start(fromAuto=false){enabled=true;try{sessionStorage.setItem(KEY,'1')}catch(_){ }if(voiceToken&&projectId&&navigator.mediaDevices?.getUserMedia&&window.MediaRecorder){void startPrecision(fromAuto);return}startWebSpeech(fromAuto)}
@@ -158,5 +163,5 @@
   try{if(window.parent!==window)window.parent.postMessage({type:'breakai-nav-ready',projectId},COMMAND_ORIGIN)}catch(_){ }
   if(launchVoice||persisted)setTimeout(()=>start(true),350);
   if(handPersisted)setTimeout(()=>void startHand(true),700);
-  window.BreakAIVoiceNav={start,stop,command,toCommand,startHand,stopHand,connectedAsk,openChat,closeChat};
+  window.BreakAIVoiceNav={start,stop,command,handleTranscript,navigationIntent,executeNavigationIntent,toCommand,startHand,stopHand,connectedAsk,openChat,closeChat};
 })();
