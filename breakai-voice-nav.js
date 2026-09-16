@@ -75,13 +75,14 @@
   async function connectedAsk(raw){const text=String(raw||'').trim();if(!text||chatBusy)return false;if(!voiceToken||!projectId){toCommand(text);return true}openChat();const prior=chatHistory.slice(-10);pushChat('user',text);chatBusy=true;show('この画面でAIが確認中…');const wait=document.createElement('div');wait.className='msg ai thinking';wait.textContent='確認しています…';chatLog.append(wait);chatLog.scrollTop=chatLog.scrollHeight;try{const r=await fetch(COMMAND_ORIGIN+'/api/connected-assist',{method:'POST',headers:{'Content-Type':'application/json','X-BreakAI-Voice-Token':voiceToken,'X-BreakAI-Project':projectId},body:JSON.stringify({message:text,history:prior,page:{path:location.pathname+location.search,title:document.title}}),mode:'cors',cache:'no-store'});const d=await r.json().catch(()=>({}));wait.remove();if(!r.ok)throw new Error(d.detail||d.error||'CONNECTED_ASSIST_FAILED');lastSources=Array.isArray(d.sources)?d.sources:[];pushChat('ai',d.reply||'確認結果を表示しました。',lastSources);handleConnectedAction(d.action);show('回答をこの画面に表示しました');void speakConnected(d.speech_text||d.reply||'')}catch(e){wait.remove();pushChat('system',`確認できませんでした: ${String(e.message||e).slice(0,120)}`);show('AI接続を確認してください')}finally{chatBusy=false}return true}
   chatButton.onclick=()=>conversation.classList.contains('open')?closeChat():openChat();$('#chat-close').onclick=closeChat;$('#chat-form').addEventListener('submit',e=>{e.preventDefault();const v=chatInput.value.trim();if(!v)return;chatInput.value='';void connectedAsk(v)});loadChat();if(chatHistory.length)renderChat();
   const normalize=t=>String(t||'').replace(/[\s　]+/g,'').replace(/指令塔|司令棟|司令等|司令東|司令党/g,'司令塔').replace(/ファイナンシャルシステム|ファイナンスシステム|金融システム/g,'FinancialAI').replace(/スカター|スカウタ/g,'SCOUTER');
-  const dangerous=/削除|消去|送信|決済|支払|購入|発注|本番反映|デプロイ|公開|投稿|保存|登録|実行|開始|停止|オン|オフ|ON|OFF/i;
+  const dangerous=/削除|消去|送信|決済|支払|購入|発注|本番反映|デプロイ|公開|投稿|保存|登録|実行|開始|停止|オン|オフ/i;
+  const dangerousToggle=/\b(?:ON|OFF)\b/i;
   function visible(el){const r=el.getBoundingClientRect(),s=getComputedStyle(el);return r.width>2&&r.height>2&&s.display!=='none'&&s.visibility!=='hidden'&&s.pointerEvents!=='none'}
   function clickVisible(text){
     let target=String(text||'').replace(/を?(開いて|開く|見せて|表示して|押して|選んで|選択して|移動して|行って|ひらいて)$/,'').trim();target=target.replace(/^(画面|メニュー|タブ)/,'').trim();
-    if(!target||target.length<2||dangerous.test(target))return false;
+    if(!target||target.length<2||dangerous.test(target)||dangerousToggle.test(target))return false;
     const nodes=[...document.querySelectorAll('nav a,nav button,a,[role="tab"],[role="menuitem"],[data-view],button')].filter(visible);let best=null,score=0;
-    for(const el of nodes){const label=(el.innerText||el.textContent||el.getAttribute('aria-label')||'').replace(/\s+/g,'').trim();if(!label||dangerous.test(label))continue;const a=normalize(label),b=normalize(target);let s=0;if(a===b)s=100;else if(a.includes(b))s=80-b.length/100;else if(b.includes(a)&&a.length>=2)s=60+a.length/100;if(s>score){score=s;best=el}}
+    for(const el of nodes){const label=(el.innerText||el.textContent||el.getAttribute('aria-label')||'').replace(/\s+/g,'').trim();if(!label||dangerous.test(label)||dangerousToggle.test(label))continue;const a=normalize(label),b=normalize(target);let s=0;if(a===b)s=100;else if(a.includes(b))s=80-b.length/100;else if(b.includes(a)&&a.length>=2)s=60+a.length/100;if(s>score){score=s;best=el}}
     if(best&&score>=60){best.click();show(`${(best.innerText||best.textContent||target).trim()}へ移動`);return true}return false;
   }
   function command(raw){
@@ -94,7 +95,7 @@
     if(/一番下|最下部|下まで/.test(n)){scrollTo({top:document.documentElement.scrollHeight,behavior:'smooth'});return true}
     if(/下にスクロール|下へスクロール|下を見/.test(n)){scrollBy({top:Math.round(innerHeight*.72),behavior:'smooth'});return true}
     if(/上にスクロール|上へスクロール|上を見/.test(n)){scrollBy({top:-Math.round(innerHeight*.72),behavior:'smooth'});return true}
-    if(/更新して|再読み込み|リロード/.test(n)){location.reload();return true}
+    if(/更新して|再読み込み|リロード/.test(n)){show('再読み込みは誤操作防止のため手動ボタンで確認してください');return true}
     const systemOpen=/(SCOUTER|スカウター|MATCH|マッチ|FIX|フィックス|AIKANO|アイカノ|CareMemory|ケアメモリー|BreakAIPlatform|プラットフォーム|FinancialAI|ファイナンシャル(?:AI|システム)|金融システム|BusinessNetwork|ビジネスネットワーク|自走収益工場|自動収益工場|GEO|ジオ|AEO|エーイーオー|BreakAIHP|ホームページ|会社HP|コーポレートサイト|HP).*(開いて|開く|行って|移動して|見せて)/i.test(n);
     if(systemOpen){show('司令塔経由でシステムを開きます');setTimeout(()=>toCommand(text),80);return true}
     if(clickVisible(text))return true;
@@ -106,8 +107,8 @@
 
   let handEnabled=false,handStarting=false,handStream=null,handLandmarker=null,lastHandVideoTime=-1,handPointerX=innerWidth/2,handPointerY=innerHeight/2,pinchDown=false,lastPinchAt=0,lastPalmX=null,lastPalmAt=0,lastSwipeAt=0;
   const interactiveSelector='button,a[href],[role="button"],[role="tab"],[role="menuitem"],[data-view],input,select,textarea,[tabindex]:not([tabindex="-1"])';
-  function targetLabel(el){return String(el?.innerText||el?.textContent||el?.getAttribute?.('aria-label')||el?.getAttribute?.('title')||'').replace(/\s+/g,' ').trim()}
-  function safeHandTarget(x,y){let el=document.elementFromPoint(x,y);if(!el)return null;el=el.closest?.(interactiveSelector)||null;if(!el||!visible(el))return null;const label=targetLabel(el);if(dangerous.test(label))return {el,blocked:true,label};return {el,blocked:false,label}}
+  function targetLabel(el){const ids=String(el?.getAttribute?.('aria-labelledby')||'').trim().split(/\s+/).filter(Boolean);const labelled=ids.map(id=>document.getElementById(id)?.textContent||'').join(' ');return [el?.innerText,el?.textContent,el?.getAttribute?.('aria-label'),el?.getAttribute?.('title'),el?.getAttribute?.('value'),labelled].filter(Boolean).join(' ').replace(/\s+/g,' ').trim()}
+  function safeHandTarget(x,y){let el=document.elementFromPoint(x,y);if(!el)return null;el=el.closest?.(interactiveSelector)||null;if(!el||!visible(el))return null;const label=targetLabel(el),tag=String(el.tagName||'').toUpperCase(),type=String(el.getAttribute?.('type')||'').toLowerCase();const formSubmit=(tag==='INPUT'&&['submit','button','image'].includes(type))||(tag==='BUTTON'&&(type==='submit'||(!type&&!!el.closest?.('form'))));const blocked=!label||formSubmit||!!el.closest?.('#approval')||dangerous.test(label)||dangerousToggle.test(label);return {el,blocked,label:label||'重要操作'}}
   function handOpen(lm){return !!(lm?.[8]&&lm?.[12]&&lm?.[16]&&lm?.[20]&&lm?.[6]&&lm?.[10]&&lm?.[14]&&lm?.[18]&&lm[8].y<lm[6].y-.012&&lm[12].y<lm[10].y-.012&&lm[16].y<lm[14].y-.012&&lm[20].y<lm[18].y-.012)}
   function distance(a,b){return Math.hypot((a?.x||0)-(b?.x||0),(a?.y||0)-(b?.y||0))}
   function setHandState(on,label=''){handEnabled=on;handButton.dataset.live=on?'1':'0';handButton.textContent=on?'🖐 手操作中':'🖐 手操作';if(label)show(label)}
