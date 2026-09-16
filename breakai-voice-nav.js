@@ -5,13 +5,17 @@
   const COMMAND='https://command.breakai-labs.co.jp/';
   const KEY='breakai.universalVoice.enabled';
   const q=new URLSearchParams(location.search);
-  const launchVoice=q.get('breakai_voice')==='1';
+  const hashVoice=/(?:^|[&#])breakai_voice=1(?:$|[&#])/.test(location.hash);
+  const launchVoice=q.get('breakai_voice')==='1'||hashVoice;
   if(launchVoice){
     try{sessionStorage.setItem(KEY,'1')}catch(_){ }
     q.delete('breakai_voice');
-    const clean=location.pathname+(q.toString()?`?${q}`:'')+location.hash;
+    const cleanHash=hashVoice?'':location.hash;
+    const clean=location.pathname+(q.toString()?`?${q}`:'')+cleanHash;
     try{history.replaceState(history.state,'',clean)}catch(_){ }
   }
+  let persisted=false;try{persisted=sessionStorage.getItem(KEY)==='1'}catch(_){ }
+  if(!launchVoice&&!persisted)return;
   const host=document.createElement('div');
   host.id='breakai-universal-nav';
   host.style.cssText='position:fixed;left:max(10px,env(safe-area-inset-left));bottom:max(10px,env(safe-area-inset-bottom));z-index:2147483647;pointer-events:auto';
@@ -87,7 +91,6 @@
     try{rec.start()}catch(_){ }
   }
   mic.onclick=()=>enabled?stop():start(false);
-  let persisted=false;try{persisted=sessionStorage.getItem(KEY)==='1'}catch(_){ }
   if(launchVoice||persisted)setTimeout(()=>start(true),500);
   window.BreakAIVoiceNav={start,stop,command,toCommand};
 })();
