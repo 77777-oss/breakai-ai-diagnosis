@@ -4,7 +4,8 @@ const FUNNEL_API='https://yqzxoiogkylgbmaftesv.supabase.co/functions/v1/revenue-
 const state={url:'',audit:null};
 const labels={identity:'会社情報',service_clarity:'サービス説明',crawl_basics:'クロール基本',machine_readable:'構造化データ',answer_ready:'FAQ・回答情報'};
 function campaign(){const q=new URLSearchParams(location.search);return{source:q.get('utm_source')||'direct',medium:q.get('utm_medium')||'',campaign:q.get('utm_campaign')||'',content:q.get('utm_content')||''};}
-function track(event,destination='',metric=null){const c=campaign();fetch(FUNNEL_API,{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,body:JSON.stringify({product:'geo',event,destination,metric,...c,path:location.pathname})}).catch(()=>{});}
+function sessionId(){try{let id=sessionStorage.getItem('breakai_geo_session');if(!id){id=crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(16).slice(2)}`;sessionStorage.setItem('breakai_geo_session',id);}return id;}catch(_){return'';}}
+function track(event,destination='',metric=null){const c=campaign();fetch(FUNNEL_API,{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,body:JSON.stringify({product:'geo',event,destination,metric,...c,path:location.pathname,session:sessionId()})}).catch(()=>{});}
 function chat(role,text){const box=$('#guideChat');const el=document.createElement('div');el.className=`guideMsg ${role}`;el.textContent=text;box.appendChild(el);box.scrollTop=box.scrollHeight;}
 function setReply(text){const el=$('#guideReply');if(el)el.textContent=text;}
 function validUrl(text){try{const u=new URL(String(text||'').trim());return /^https?:$/.test(u.protocol)?u.href:''}catch(_){return''}}
@@ -17,6 +18,7 @@ async function runAudit(text){const u=validUrl(text);if(!u){chat('ai','https:// 
  finally{b.disabled=false;b.textContent='無料診断する';}}
 function handle(text){const t=String(text||'').trim();if(!t){chat('ai','会社の公開URLを貼り付けてください。');return;}if(!state.audit){const faq=answerFaq(t);if(faq&&!validUrl(t)){chat('user',t);chat('ai',faq);return;}runAudit(t);return;}chat('user',t);chat('ai',answerFaq(t)||'無料診断はWeb準備度です。詳細版ではChatGPT・Gemini・Perplexityの実回答を36観測して比較します。');}
 window.addEventListener('DOMContentLoaded',()=>{
+ track('page_view','geo_landing');
  $('#guideAskBtn')?.addEventListener('click',()=>handle($('#guideQuestion')?.value));
  $('#guideQuestion')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();handle(e.currentTarget.value);}});
  document.querySelectorAll('[data-guide]').forEach(b=>b.addEventListener('click',()=>handle(b.dataset.guide)));
