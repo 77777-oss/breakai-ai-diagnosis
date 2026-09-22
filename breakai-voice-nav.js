@@ -2,7 +2,7 @@
   'use strict';
   if(window.__BREAKAI_UNIVERSAL_VOICE_NAV__) return;
   window.__BREAKAI_UNIVERSAL_VOICE_NAV__=true;
-  const COMMAND='https://command.breakai-labs.co.jp/';
+  const COMMAND='https://command.breakai-labs.co.jp/command-center';
   const COMMAND_ORIGIN='https://command.breakai-labs.co.jp';
   const KEY='breakai.universalVoice.enabled';
   const SHELL_KEY='breakai.universalShell.enabled';
