@@ -23,4 +23,5 @@ const c=window.BREAKAI_CONFIG||{};if(c.live&&c.freeIntakeUrl){$('#liveCtas').cla
 $('#starter')?.addEventListener('click',()=>track('paid_click','starter_1980'));
 $('#report')?.addEventListener('click',()=>track('paid_click','report_19800'));
 document.querySelectorAll('a[href*="samples.html"]').forEach(a=>a.addEventListener('click',()=>track('sample_click','samples')));
+window.addEventListener('DOMContentLoaded',()=>track('page_view','work_reduction_landing'));
 step1();
