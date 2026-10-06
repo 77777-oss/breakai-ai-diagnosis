@@ -9,7 +9,7 @@ function track(event,destination='',metric=null){const c=campaign();return fetch
 function chat(role,text){const box=$('#guideChat');const el=document.createElement('div');el.className=`guideMsg ${role}`;el.textContent=String(text??'');box.appendChild(el);box.scrollTop=box.scrollHeight;}
 function setReply(text){const el=$('#guideReply');if(el)el.textContent=String(text??'');}
 function validUrl(text){const raw=String(text||'').trim();if(!raw)return'';const candidate=/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)?raw:`https://${raw}`;try{const u=new URL(candidate);return /^https?:$/.test(u.protocol)&&u.hostname?u.href:''}catch(_){return''}}
-function answerFaq(t){t=String(t||'');if(/料金|価格|有料/.test(t))return'詳細版はパイロット価格19,800円の単発診断です。OpenAI・Gemini・Perplexityの3系統×12問＝36観測で競合・引用元・誤情報・AI間差まで確認します。';if(/競合|比較/.test(t))return'無料版はWebサイト側の準備度です。詳細版ではOpenAI API・Gemini API・Perplexity APIの同一質問観測で競合比較まで行います。消費者向けChatGPT画面そのものの再現ではありません。';if(/何が分か|わかる|内容/.test(t))return'無料で、会社情報・サービス説明・クロール基本・構造化データ・FAQ/回答情報の5項目と、優先改善点が分かります。';return'';}
+function answerFaq(t){t=String(t||'');if(/料金|価格|有料/.test(t))return'詳細版はパイロット価格19,800円の単発診断です。OpenAI・Geminiの2系統×12問＝24観測で競合・引用元・誤情報・AI間差まで確認します。';if(/競合|比較/.test(t))return'無料版はWebサイト側の準備度です。詳細版ではOpenAI API・Gemini APIの同一質問観測で競合比較まで行います。消費者向けChatGPT画面そのものの再現ではありません。';if(/何が分か|わかる|内容/.test(t))return'無料で、会社情報・サービス説明・クロール基本・構造化データ・FAQ/回答情報の5項目と、優先改善点が分かります。';return'';}
 function clear(el){while(el.firstChild)el.removeChild(el.firstChild);}
 function renderComponents(components){
   const root=$('#auditMetrics'); clear(root);
@@ -71,7 +71,7 @@ async function runAudit(text){
     chat('ai',scored?`診断完了です。準備度は ${Number(d.score)}/100、${String(d.grade||'結果を確認してください')} です。下に内訳と優先改善点を表示しました。`:'今回は安全に取得できなかったため採点していません。公開状態を確認して再診断してください。');
     renderAudit(d);
     if(scored)track('free_result','geo_free',Number(d.score));
-    setReply(scored?'無料結果を確認してください。詳細版では3AI×12問の実観測まで行います。':'今回は有効な診断結果として記録していません。URLを確認して再度お試しください。');
+    setReply(scored?'無料結果を確認してください。詳細版では2AI×12問の実観測まで行います。':'今回は有効な診断結果として記録していません。URLを確認して再度お試しください。');
   }catch(e){
     track('page_view',e.name==='AbortError'?'geo_diagnostic_timeout':'geo_diagnostic_error');
     chat('ai',e.name==='AbortError'?'診断に時間がかかっています。時間をおいて、もう一度お試しください。':`診断できませんでした：${e.message}`);
@@ -81,7 +81,7 @@ async function runAudit(text){
 function handle(text){
   const t=String(text||'').trim();if(!t){chat('ai','会社の公開URLを貼り付けてください。');return;}
   const u=validUrl(t);if(u){runAudit(u);return;}
-  const faq=answerFaq(t);chat('user',t);chat('ai',faq||'無料診断はWeb準備度です。詳細版ではOpenAI・Gemini・Perplexityの3系統を同一12問で36観測して比較します。別の会社URLを貼れば続けて再診断できます。');
+  const faq=answerFaq(t);chat('user',t);chat('ai',faq||'無料診断はWeb準備度です。詳細版ではOpenAI・Geminiの2系統を同一12問で24観測して比較します。別の会社URLを貼れば続けて再診断できます。');
 }
 window.addEventListener('DOMContentLoaded',()=>{
   track('page_view','geo_landing');
@@ -95,5 +95,5 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('a[href="#free-diagnosis"]').forEach(a=>a.addEventListener('click',()=>setTimeout(()=>$('#guideQuestion')?.focus({preventScroll:true}),0)));
   document.querySelectorAll('[data-guide]').forEach(b=>b.addEventListener('click',()=>handle(b.dataset.guide)));
   document.querySelectorAll('[data-sample-cta]').forEach(a=>a.addEventListener('click',()=>track('sample_click','geo_evidence_sample')));
-  document.querySelectorAll('[data-paid-cta]').forEach(a=>a.addEventListener('click',()=>{track('paid_click','geo_intro_19800');setReply('19,800円のパイロット詳細版へ進みます。会社名・サイトURL・業種・主サービスを確認し、決済後に3AI×12問の観測レポートを作成します。');}));
+  document.querySelectorAll('[data-paid-cta]').forEach(a=>a.addEventListener('click',()=>{track('paid_click','geo_intro_19800');setReply('19,800円のパイロット詳細版へ進みます。会社名・サイトURL・業種・主サービスを確認し、決済後に2AI×12問の観測レポートを作成します。');}));
 });
