@@ -2,6 +2,7 @@ const $=(s)=>document.querySelector(s);
 const AUDIT_API='https://yqzxoiogkylgbmaftesv.supabase.co/functions/v1/geo-free-audit';
 const FUNNEL_API='https://yqzxoiogkylgbmaftesv.supabase.co/functions/v1/revenue-funnel-event';
 const CHECKOUT_API='https://breakai-geo-checkout.vercel.app/api/geo-checkout';
+const ORDER_CONFIRM_API='https://yqzxoiogkylgbmaftesv.supabase.co/functions/v1/geo-order-confirm';
 const state={url:'',audit:null,inFlight:false,requestSeq:0};
 let checkoutInFlight=false;
 const labels={identity:'会社情報',service_clarity:'サービス説明',crawl_basics:'クロール基本',machine_readable:'構造化データ',answer_ready:'よくある質問・回答情報'};
@@ -110,6 +111,72 @@ async function openPaidCheckout(e){
     clearTimeout(timer);
   }
 }
+async function showCheckoutReturn(){
+  const q=new URLSearchParams(location.search);
+  const checkout=String(q.get('checkout')||'');
+  if(checkout!=='success'&&checkout!=='cancel')return;
+  const session=String(q.get('session_id')||'');
+  const validSession=/^cs_live_[A-Za-z0-9_]+$/.test(session);
+  track('checkout_return',checkout,checkout==='success'?1:0);
+
+  const box=document.createElement('section');
+  box.setAttribute('role',checkout==='success'?'status':'alert');
+  box.style.cssText='width:min(980px,calc(100% - 28px));margin:18px auto 0;padding:20px 22px;border-radius:18px;border:1px solid '+(checkout==='success'?'rgba(77,225,174,.38)':'rgba(255,188,105,.32)')+';background:'+(checkout==='success'?'linear-gradient(135deg,rgba(10,78,62,.82),rgba(6,30,42,.94))':'linear-gradient(135deg,rgba(86,54,18,.72),rgba(28,24,22,.94))')+';color:#eefcff;box-shadow:0 20px 60px rgba(0,0,0,.2)';
+
+  const title=document.createElement('h2');
+  title.style.cssText='margin:0 0 8px;font-size:22px';
+  const body=document.createElement('p');
+  body.style.cssText='margin:0;color:#cfe2e8;line-height:1.75;font-size:13px';
+
+  if(checkout==='cancel'){
+    title.textContent='決済は完了していません';
+    body.textContent='Stripeの決済画面でキャンセルされました。料金は発生していません。必要なときに、もう一度「詳細版を申し込む」から進めてください。';
+    box.append(title,body);
+  }else{
+    title.textContent='お申し込みを受け付けました';
+    body.textContent='Stripeの決済完了画面から戻りました。支払いを確認して受付を記録しています。';
+    box.append(title,body);
+
+    const ref=document.createElement('small');
+    ref.style.cssText='display:block;margin-top:10px;color:#84d9c0';
+    ref.textContent=validSession?'受付識別子：…'+session.slice(-8):'受付情報を確認中です';
+    box.appendChild(ref);
+
+    if(validSession){
+      try{
+        const controller=new AbortController();
+        const timer=setTimeout(()=>controller.abort(),12000);
+        const r=await fetch(ORDER_CONFIRM_API,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({session_id:session}),
+          signal:controller.signal
+        });
+        clearTimeout(timer);
+        const d=await r.json().catch(()=>({}));
+        if(r.ok&&d?.status==='RECORDED'){
+          title.textContent='決済を確認し、受付を記録しました';
+          body.textContent='会社サイトURL・業種・主なサービスを受付済みです。内容を確認し、必要情報の確認完了後、原則3営業日以内にAI検索実測レポートをメールでお送りします。';
+          ref.textContent='受付ID：'+String(d.order_id||'').slice(0,8)+'…';
+        }else{
+          body.textContent='決済完了画面から戻りました。受付情報は自動照合でも確認します。画面を閉じても問題ありません。';
+        }
+      }catch(_){
+        body.textContent='決済完了画面から戻りました。受付情報は自動照合でも確認します。画面を閉じても問題ありません。';
+      }
+    }
+  }
+
+  const top=document.querySelector('.geoTopbar');
+  if(top?.parentNode)top.parentNode.insertBefore(box,top.nextSibling);
+  else document.body.prepend(box);
+
+  q.delete('checkout');
+  q.delete('session_id');
+  const qs=q.toString();
+  history.replaceState({},'',location.pathname+(qs?'?'+qs:'')+location.hash);
+  setTimeout(()=>box.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}),50);
+}
 function handle(text){
   const t=String(text||'').trim();if(!t){showGuideError('会社サイトのURLを入力してください。例：breakai-labs.co.jp');$('#guideQuestion')?.focus();return;}
   const u=validUrl(t);if(u){showGuideError('');runAudit(u);return;}
@@ -118,6 +185,7 @@ function handle(text){
 }
 window.addEventListener('DOMContentLoaded',()=>{
   track('page_view','geo_landing');
+  showCheckoutReturn();
   window.addEventListener('scroll',syncSticky,{passive:true});
   syncSticky();
   if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
