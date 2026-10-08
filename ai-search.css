@@ -807,3 +807,47 @@
     transition-duration:.001ms!important;
   }
 }
+
+
+/* V7.5 readability pass — stronger contrast for Evidence sample */
+.geoSamplePage .geoSampleHero>p:not(.sectionKicker),
+.geoSamplePage .geoSectionHead>p{
+  color:#c7d6df;
+}
+.geoSamplePage .geoSampleSummary span{
+  color:#bccdd6;
+}
+.geoSamplePage .geoEvidenceCase header b{
+  color:#d6e3e9;
+}
+.geoSamplePage .geoEvidenceCaseGrid small{
+  color:#88d8ee;
+}
+.geoSamplePage .geoEvidenceCaseGrid strong{
+  color:#f2fbff;
+}
+.geoSamplePage .geoEvidenceCaseGrid p{
+  color:#c7d7e0;
+  font-size:13px;
+  line-height:1.85;
+}
+.geoSamplePage .geoEvidenceCaseGrid a{
+  color:#8be7ff;
+}
+.geoSamplePage .geoMethodGrid span,
+.geoSamplePage .geoActionTimeline span{
+  color:#b8cbd5;
+  font-size:12px;
+}
+.geoSamplePage .geoSampleDisclosure{
+  color:#afc2cc;
+  font-size:12px;
+}
+@media(max-width:680px){
+  .geoSamplePage .geoEvidenceCaseGrid p,
+  .geoSamplePage .geoMethodGrid span,
+  .geoSamplePage .geoActionTimeline span,
+  .geoSamplePage .geoSampleDisclosure{
+    font-size:13px;
+  }
+}
