@@ -851,3 +851,105 @@
     font-size:13px;
   }
 }
+
+
+/* V7.6 global legibility pass — remove low-contrast muted text across GEO/AEO */
+.geoPremium .geoStoryCopy>p:not(.sectionKicker):not(.geoDisclosure),
+.geoPremium .geoSectionHead>p,
+.geoPremium .geoQualityBlock>div>p:not(.sectionKicker),
+.geoPremium .geoSampleHero>p:not(.sectionKicker){
+  color:#d0dbe0;
+}
+
+.geoPremium .geoDeliverableGrid span,
+.geoPremium .geoScopeCard span,
+.geoPremium .geoReportKpi span,
+.geoPremium .geoReportAction span,
+.geoPremium .geoCompareGrid ul,
+.geoPremium .geoProcessGrid span,
+.geoPremium .geoFaqGrid p,
+.geoPremium .geoQualityChecklist span,
+.geoPremium .geoSelfProofGrid span,
+.geoPremium .geoSelfProofConclusion span,
+.geoPremium .geoMethodNote span,
+.geoPremium .geoFitStrip span,
+.geoPremium .geoFinalCta>div>p:last-child,
+.geoPremium .geoFinalPrice>span,
+.geoPremium .freeScopeNote,
+.geoPremium .paidGate{
+  color:#c7d5dc!important;
+}
+
+.geoPremium .geoDeliverableGrid span,
+.geoPremium .geoProcessGrid span,
+.geoPremium .geoQualityChecklist span,
+.geoPremium .geoSelfProofGrid span,
+.geoPremium .geoFaqGrid p,
+.geoPremium .geoCompareGrid ul{
+  font-size:13px;
+  line-height:1.85;
+}
+
+.geoPremium .geoScopeCard span,
+.geoPremium .geoReportKpi span,
+.geoPremium .geoReportAction span,
+.geoPremium .geoMethodNote span,
+.geoPremium .geoFitStrip span,
+.geoPremium .geoFinalCta>div>p:last-child{
+  font-size:12px;
+  line-height:1.85;
+}
+
+.geoPremium .geoDisclosure,
+.geoPremium .geoGuardrail,
+.geoPremium .geoReportMock>p,
+.geoPremium .geoSampleDisclosure,
+.geoPremium .geoHeroDossier>p{
+  color:#b8c7ce!important;
+  font-size:11px;
+  line-height:1.8;
+}
+
+.geoPremium .geoDeliverableGrid b,
+.geoPremium .geoScopeCard b,
+.geoPremium .geoReportAction b,
+.geoPremium .geoProcessGrid b,
+.geoPremium .geoQualityChecklist b,
+.geoPremium .geoSelfProofGrid b{
+  color:#f4f8fa;
+}
+
+.geoPremium .geoReportTop>span,
+.geoPremium .geoReportKpi small,
+.geoPremium .geoReportAction small,
+.geoPremium .geoCheckoutLinks a,
+.geoPremium .geoFinalPrice>small{
+  color:#aebfc7!important;
+}
+
+.geoPremium .geoDeliverableGrid small,
+.geoPremium .geoScopeCard small,
+.geoPremium .geoReportTop small,
+.geoPremium .geoReportKpi small,
+.geoPremium .geoReportAction small,
+.geoPremium .geoProcessGrid i,
+.geoPremium .geoQualityChecklist b{
+  text-shadow:0 0 14px rgba(232,200,143,.08);
+}
+
+@media(max-width:680px){
+  .geoPremium .geoDeliverableGrid span,
+  .geoPremium .geoScopeCard span,
+  .geoPremium .geoReportKpi span,
+  .geoPremium .geoReportAction span,
+  .geoPremium .geoCompareGrid ul,
+  .geoPremium .geoProcessGrid span,
+  .geoPremium .geoFaqGrid p,
+  .geoPremium .geoQualityChecklist span,
+  .geoPremium .geoSelfProofGrid span,
+  .geoPremium .geoMethodNote span,
+  .geoPremium .geoFitStrip span,
+  .geoPremium .geoFinalCta>div>p:last-child{
+    font-size:13px;
+  }
+}
