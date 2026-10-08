@@ -8,7 +8,8 @@ function sessionId(){try{let id=sessionStorage.getItem('breakai_geo_session');if
 function track(event,destination='',metric=null){const c=campaign();return fetch(FUNNEL_API,{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,body:JSON.stringify({product:'geo',event,destination,metric,...c,path:location.pathname,session:sessionId()})}).then(r=>{if(!r.ok)console.warn('funnel_event_not_recorded',event,r.status);return r;}).catch(e=>{console.warn('funnel_event_failed',event,e?.message||'unknown');return null;});}
 function chat(role,text){const box=$('#guideChat');const el=document.createElement('div');el.className=`guideMsg ${role}`;el.textContent=String(text??'');box.appendChild(el);box.scrollTop=box.scrollHeight;}
 function setReply(text){const el=$('#guideReply');if(el)el.textContent=String(text??'');}
-function validUrl(text){const raw=String(text||'').trim();if(!raw)return'';const candidate=/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)?raw:`https://${raw}`;try{const u=new URL(candidate);return /^https?:$/.test(u.protocol)&&u.hostname?u.href:''}catch(_){return''}}
+function showGuideError(text){const el=$('#guideError'),input=$('#guideQuestion');if(el){el.textContent=String(text||'');el.classList.toggle('hidden',!text);}if(input)input.setAttribute('aria-invalid',text?'true':'false');}
+function validUrl(text){const raw=String(text||'').trim();if(!raw)return'';const candidate=/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)?raw:`https://${raw}`;try{const u=new URL(candidate);const host=u.hostname||'';const publicLike=host.includes('.')&&!host.startsWith('.')&&!host.endsWith('.');return /^https?:$/.test(u.protocol)&&publicLike?u.href:''}catch(_){return''}}
 function answerFaq(t){t=String(t||'');if(/料金|価格|有料/.test(t))return'詳細版はパイロット価格19,800円の単発診断です。OpenAI・Geminiの2系統×12問＝24観測で競合・引用元・誤情報・AI間差まで確認します。';if(/競合|比較/.test(t))return'無料版はWebサイト側の準備度です。詳細版ではOpenAI API・Gemini APIの同一質問観測で競合比較まで行います。消費者向けChatGPT画面そのものの再現ではありません。';if(/何が分か|わかる|内容/.test(t))return'無料で、会社情報・サービス説明・クロール基本・構造化データ・FAQ/回答情報の5項目と、優先改善点が分かります。';return'';}
 function clear(el){while(el.firstChild)el.removeChild(el.firstChild);}
 function renderComponents(components){
@@ -55,7 +56,8 @@ function renderAudit(d){
   $('#auditResult').scrollIntoView({behavior:reduced?'auto':'smooth',block:'start'});
 }
 async function runAudit(text){
-  const u=validUrl(text); if(!u){chat('ai','https:// から始まる公開URLを貼り付けてください。');return;}
+  const u=validUrl(text); if(!u){showGuideError('会社サイトのURLを正しく入力してください。例：breakai-labs.co.jp');$('#guideQuestion')?.focus();return;}
+  showGuideError('');
   if(state.inFlight){setReply('診断中です。完了してから次のURLをお試しください。');return;}
   state.inFlight=true;const requestId=++state.requestSeq;
   state.url=u;state.audit=null;$('#auditResult')?.classList.add('hidden');syncSticky();track('page_view','geo_diagnostic_start');chat('user',u);chat('ai','公開Webを取得して5項目を確認しています。少しお待ちください。');
@@ -79,9 +81,10 @@ async function runAudit(text){
   }finally{clearTimeout(timer);if(requestId===state.requestSeq){state.inFlight=false;b.disabled=false;b.textContent='無料で確認する →';}}
 }
 function handle(text){
-  const t=String(text||'').trim();if(!t){chat('ai','会社の公開URLを貼り付けてください。');return;}
-  const u=validUrl(t);if(u){runAudit(u);return;}
-  const faq=answerFaq(t);chat('user',t);chat('ai',faq||'無料診断はWeb準備度です。詳細版ではOpenAI・Geminiの2系統を同一12問で24観測して比較します。別の会社URLを貼れば続けて再診断できます。');
+  const t=String(text||'').trim();if(!t){showGuideError('会社サイトのURLを入力してください。例：breakai-labs.co.jp');$('#guideQuestion')?.focus();return;}
+  const u=validUrl(t);if(u){showGuideError('');runAudit(u);return;}
+  const faq=answerFaq(t);if(faq){showGuideError('');chat('user',t);chat('ai',faq);return;}
+  showGuideError('会社サイトのURLを正しく入力してください。例：breakai-labs.co.jp');$('#guideQuestion')?.focus();
 }
 window.addEventListener('DOMContentLoaded',()=>{
   track('page_view','geo_landing');
@@ -92,6 +95,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   }
   $('#guideAskBtn')?.addEventListener('click',()=>handle($('#guideQuestion')?.value));
   $('#guideQuestion')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();handle(e.currentTarget.value);}});
+  $('#guideQuestion')?.addEventListener('input',()=>showGuideError(''));
   document.querySelectorAll('a[href="#free-diagnosis"]').forEach(a=>a.addEventListener('click',()=>setTimeout(()=>$('#guideQuestion')?.focus({preventScroll:true}),0)));
   document.querySelectorAll('[data-guide]').forEach(b=>b.addEventListener('click',()=>handle(b.dataset.guide)));
   document.querySelectorAll('[data-sample-cta]').forEach(a=>a.addEventListener('click',()=>track('sample_click','geo_evidence_sample')));
