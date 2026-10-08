@@ -41,7 +41,7 @@ function renderRecommendations(recs,scored){
   text.textContent=scored?'今回の取得範囲では優先改善候補を特定できませんでした。':'取得できない項目があるため改善候補を判定していません。URLの公開状態を確認して再診断してください。';
   li.appendChild(text); root.appendChild(li);
 }
-function syncSticky(){const sticky=document.querySelector('.geoMobileSticky');if(!sticky)return;const scored=state.audit?.score!=null&&Number.isFinite(Number(state.audit.score));sticky.classList.toggle('isPaidReady',scored);sticky.classList.toggle('isVisible',window.scrollY>620||scored);}
+function syncSticky(){const sticky=document.querySelector('.geoMobileSticky');if(!sticky)return;const scored=state.audit?.score!=null&&Number.isFinite(Number(state.audit.score));const overlapsEnd=[document.querySelector('.geoFinalCta'),document.querySelector('footer')].some(el=>{if(!el)return false;const r=el.getBoundingClientRect();return r.top<window.innerHeight&&r.bottom>0;});sticky.classList.toggle('isPaidReady',scored);sticky.classList.toggle('isVisible',(window.scrollY>620||scored)&&!overlapsEnd);}
 function renderAudit(d){
   state.audit=d; $('#auditResult').classList.remove('hidden');
   const paidUpsell=document.querySelector('.paidUpsell'); if(paidUpsell)paidUpsell.classList.toggle('hidden',d.score==null);
