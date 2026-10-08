@@ -11,9 +11,9 @@ privacy=(R/"privacy.html").read_text(encoding="utf-8")
 errors=[]
 
 required_html=[
-    "AIの比較候補に", "2AI × 12問 = 24観測", "19,800", "原則3営業日",
+    "AIの比較候補に", "2種類のAI × 12問 = 24観測", "19,800", "原則3営業日",
     "geo-evidence-sample.html", "data-sample-cta", "data-paid-cta",
-    "WHO / QUALITY CONTROL", "24 / 24 completeness", "本番サイト変更なし",
+    "運営 / 品質管理", "24 / 24 観測確認", "本番サイト変更なし",
     "PDF要約＋24観測一覧（CSV）＋30日実行案", "OpenAI API・Gemini API",
     'id="free-diagnosis"', "納品後7日以内", "24観測の一部が取得できない場合は？",
 ]
@@ -25,10 +25,10 @@ if "legal.html?from=geo" not in html or "privacy.html?from=geo" not in html:
     errors.append("GEO legal context links missing")
 
 for x in [
-    "REAL SELF-OBSERVATION", "8 / 8", "0 / 16", "OWN-SITE CITATIONS",
+    "BreakAI自社実測", "8 / 8", "0 / 16", "自社サイト引用",
     "AI・業務改善でおすすめのAI業務支援は？", "BreakAI Labsはどんな会社？",
     "2026-09-13", "gpt-5.6-luna", "gemini-3.8-flash",
-    "breakai-labs.co.jp", "30-DAY ACTION EXAMPLE"
+    "breakai-labs.co.jp", "30日改善例"
 ]:
     if x not in sample: errors.append("sample missing: "+x)
 
