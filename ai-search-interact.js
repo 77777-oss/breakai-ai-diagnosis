@@ -2,7 +2,7 @@ const $=(s)=>document.querySelector(s);
 const AUDIT_API='https://yqzxoiogkylgbmaftesv.supabase.co/functions/v1/geo-free-audit';
 const FUNNEL_API='https://yqzxoiogkylgbmaftesv.supabase.co/functions/v1/revenue-funnel-event';
 const state={url:'',audit:null,inFlight:false,requestSeq:0};
-const labels={identity:'会社情報',service_clarity:'サービス説明',crawl_basics:'クロール基本',machine_readable:'構造化データ',answer_ready:'FAQ・回答情報'};
+const labels={identity:'会社情報',service_clarity:'サービス説明',crawl_basics:'クロール基本',machine_readable:'構造化データ',answer_ready:'よくある質問・回答情報'};
 function campaign(){const q=new URLSearchParams(location.search);return{source:q.get('utm_source')||'direct',medium:q.get('utm_medium')||'',campaign:q.get('utm_campaign')||'',content:q.get('utm_content')||''};}
 function sessionId(){try{let id=sessionStorage.getItem('breakai_geo_session');if(!id){id=crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(16).slice(2)}`;sessionStorage.setItem('breakai_geo_session',id);}return id;}catch(_){return'';}}
 function track(event,destination='',metric=null){const c=campaign();return fetch(FUNNEL_API,{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,body:JSON.stringify({product:'geo',event,destination,metric,...c,path:location.pathname,session:sessionId()})}).then(r=>{if(!r.ok)console.warn('funnel_event_not_recorded',event,r.status);return r;}).catch(e=>{console.warn('funnel_event_failed',event,e?.message||'unknown');return null;});}
@@ -10,7 +10,7 @@ function chat(role,text){const box=$('#guideChat');const el=document.createEleme
 function setReply(text){const el=$('#guideReply');if(el)el.textContent=String(text??'');}
 function showGuideError(text){const el=$('#guideError'),input=$('#guideQuestion');if(el){el.textContent=String(text||'');el.classList.toggle('hidden',!text);}if(input)input.setAttribute('aria-invalid',text?'true':'false');}
 function validUrl(text){const raw=String(text||'').trim();if(!raw)return'';const candidate=/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)?raw:`https://${raw}`;try{const u=new URL(candidate);const host=u.hostname||'';const publicLike=host.includes('.')&&!host.startsWith('.')&&!host.endsWith('.');return /^https?:$/.test(u.protocol)&&publicLike?u.href:''}catch(_){return''}}
-function answerFaq(t){t=String(t||'');if(/料金|価格|有料/.test(t))return'詳細版はパイロット価格19,800円の単発診断です。OpenAI・Geminiの2系統×12問＝24観測で競合・引用元・誤情報・AI間差まで確認します。';if(/競合|比較/.test(t))return'無料版はWebサイト側の準備度です。詳細版ではOpenAI API・Gemini APIの同一質問観測で競合比較まで行います。消費者向けChatGPT画面そのものの再現ではありません。';if(/何が分か|わかる|内容/.test(t))return'無料で、会社情報・サービス説明・クロール基本・構造化データ・FAQ/回答情報の5項目と、優先改善点が分かります。';return'';}
+function answerFaq(t){t=String(t||'');if(/料金|価格|有料/.test(t))return'詳細版はパイロット価格19,800円の単発診断です。OpenAI・Geminiの2系統×12問＝24観測で競合・引用元・誤情報・AI間差まで確認します。';if(/競合|比較/.test(t))return'無料版はWebサイト側の準備度です。詳細版ではOpenAI API・Gemini APIの同一質問観測で競合比較まで行います。消費者向けChatGPT画面そのものの再現ではありません。';if(/何が分か|わかる|内容/.test(t))return'無料で、会社情報・サービス説明・クロール基本・構造化データ・よくある質問・回答情報の5項目と、優先改善点が分かります。';return'';}
 function clear(el){while(el.firstChild)el.removeChild(el.firstChild);}
 function renderComponents(components){
   const root=$('#auditMetrics'); clear(root);
@@ -62,7 +62,7 @@ async function runAudit(text){
   state.inFlight=true;const requestId=++state.requestSeq;
   state.url=u;state.audit=null;$('#auditResult')?.classList.add('hidden');syncSticky();track('page_view','geo_diagnostic_start');chat('user',u);chat('ai','公開Webを取得して5項目を確認しています。少しお待ちください。');
   const b=$('#guideAskBtn'); b.disabled=true;b.textContent='診断中…';
-  setReply('会社情報・サービス説明・クロール・構造化データ・FAQを確認中です。');
+  setReply('会社情報・サービス説明・クロール・構造化データ・よくある質問を確認中です。');
   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),15000);
   try{
     const r=await fetch(AUDIT_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:u}),signal:controller.signal});
