@@ -1,7 +1,9 @@
 const $=(s)=>document.querySelector(s);
 const AUDIT_API='https://yqzxoiogkylgbmaftesv.supabase.co/functions/v1/geo-free-audit';
 const FUNNEL_API='https://yqzxoiogkylgbmaftesv.supabase.co/functions/v1/revenue-funnel-event';
+const CHECKOUT_API='https://breakai-geo-checkout.vercel.app/api/geo-checkout';
 const state={url:'',audit:null,inFlight:false,requestSeq:0};
+let checkoutInFlight=false;
 const labels={identity:'会社情報',service_clarity:'サービス説明',crawl_basics:'クロール基本',machine_readable:'構造化データ',answer_ready:'よくある質問・回答情報'};
 function campaign(){const q=new URLSearchParams(location.search);return{source:q.get('utm_source')||'direct',medium:q.get('utm_medium')||'',campaign:q.get('utm_campaign')||'',content:q.get('utm_content')||''};}
 function sessionId(){try{let id=sessionStorage.getItem('breakai_geo_session');if(!id){id=crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(16).slice(2)}`;sessionStorage.setItem('breakai_geo_session',id);}return id;}catch(_){return'';}}
@@ -80,6 +82,34 @@ async function runAudit(text){
     setReply('URLの公開状態を確認して、もう一度お試しください。');
   }finally{clearTimeout(timer);if(requestId===state.requestSeq){state.inFlight=false;b.disabled=false;b.textContent='無料で確認する →';}}
 }
+async function openPaidCheckout(e){
+  e?.preventDefault?.();
+  if(checkoutInFlight)return;
+  checkoutInFlight=true;
+  const a=e?.currentTarget;
+  const originalHtml=a?.innerHTML||'';
+  if(a){a.setAttribute('aria-disabled','true');a.textContent='決済画面を準備中…';}
+  track('paid_click','geo_intro_19800');
+  setReply('19,800円の詳細版の決済画面を準備しています。決済前に会社サイトURL・業種・主なサービスを確認します。');
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),12000);
+  try{
+    const r=await fetch(CHECKOUT_API,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:controller.signal});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(d.error||'CHECKOUT_REQUEST_FAILED');
+    const u=new URL(String(d.checkout_url||''));
+    if(u.protocol!=='https:'||u.hostname!=='checkout.stripe.com')throw new Error('INVALID_CHECKOUT_URL');
+    location.assign(u.href);
+  }catch(err){
+    console.error('geo_checkout_failed',err);
+    setReply('決済画面を開けませんでした。時間をおいてもう一度お試しください。料金は発生していません。');
+    showGuideError('決済画面を開けませんでした。時間をおいてもう一度お試しください。');
+    checkoutInFlight=false;
+    if(a){a.removeAttribute('aria-disabled');a.innerHTML=originalHtml;}
+  }finally{
+    clearTimeout(timer);
+  }
+}
 function handle(text){
   const t=String(text||'').trim();if(!t){showGuideError('会社サイトのURLを入力してください。例：breakai-labs.co.jp');$('#guideQuestion')?.focus();return;}
   const u=validUrl(t);if(u){showGuideError('');runAudit(u);return;}
@@ -99,5 +129,5 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('a[href="#free-diagnosis"]').forEach(a=>a.addEventListener('click',()=>setTimeout(()=>$('#guideQuestion')?.focus({preventScroll:true}),0)));
   document.querySelectorAll('[data-guide]').forEach(b=>b.addEventListener('click',()=>handle(b.dataset.guide)));
   document.querySelectorAll('[data-sample-cta]').forEach(a=>a.addEventListener('click',()=>track('sample_click','geo_evidence_sample')));
-  document.querySelectorAll('[data-paid-cta]').forEach(a=>a.addEventListener('click',()=>{track('paid_click','geo_intro_19800');setReply('19,800円のパイロット詳細版へ進みます。会社名・サイトURL・業種・主サービスを確認し、決済後に2AI×12問の観測レポートを作成します。');}));
+  document.querySelectorAll('[data-paid-cta]').forEach(a=>a.addEventListener('click',openPaidCheckout));
 });
