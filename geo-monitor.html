@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="GEOの3AI観測をブラウザー内だけで前回・今回比較。データをサーバーに送らない監視準備版。">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'">
+<title>GEO 継続監視｜ローカル比較・データ管理｜BreakAI Labs</title>
+<link rel="stylesheet" href="geo-monitor.css">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<script src="geo-monitor.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">内容へ移動</a>
+<header class="topbar">
+  <a class="brand" href="ai-search.html" aria-label="BreakAI Labs GEOへ戻る"><span class="mark">B</span><span>BreakAI Labs<small>GEO / MONITOR</small></span></a>
+  <nav aria-label="メインナビ"><a href="ai-search.html">GEO診断</a><a href="geo-evidence-sample.html">実測サンプル</a><a href="privacy.html?from=geo">プライバシー</a></nav>
+</header>
+<main id="main">
+  <section class="hero">
+    <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+    <div class="hero-main">
+      <div class="eyebrow"><span class="dot"></span> BREAKAI GEO / MEASUREMENT HISTORY</div>
+      <h1>AI検索の見え方を、<br><em>前回と今回で比較する。</em></h1>
+      <p class="intro">OpenAI・Gemini・Perplexityの<strong>各12問、合計36観測</strong>。結果の変化を、質問条件とAIモデルを確認しながら比較します。</p>
+      <div class="pills"><span>公開Webの観測</span><span>3AI比較</span><span>端末内で処理</span><span>追加のAPI課金なし</span></div>
+    </div>
+    <aside class="hero-panel" aria-label="この機能の状態">
+      <div class="panel-top"><span>MONITOR STATUS</span><span class="pill-hold">準備版</span></div>
+      <div class="big">36<span> observations</span></div>
+      <p>継続監視の比較機能を先行公開。<strong>月次の自動測定、月額課金、サーバーへのデータ登録は未開始</strong>です。</p>
+      <div class="divider"></div>
+      <p class="small">この画面にアップロードしたファイルは、お使いのブラウザーのメモリで処理され、BreakAIのサーバーに送信しません。</p>
+    </aside>
+  </section>
+  <section class="shell" aria-label="監視機能">
+    <div class="steps"><span><b>01</b> 利用の確認</span><span><b>02</b> 観測結果の選択</span><span><b>03</b> 差分を確認</span></div>
+    <div class="workspace">
+      <section class="pane" aria-labelledby="consent-heading">
+        <div class="pane-head"><span class="num">01</span><div><h2 id="consent-heading">データの取り扱いを選ぶ</h2><p>比較ファイルの読み込みは、この画面内での許可を得てから実行します。</p></div></div>
+        <div class="privacy-info">
+          <p><b>この画面では保存も送信もしません。</b> 顧客名・メールアドレス・元のAI回答文は必要ありません。読み取ったデータは画面を閉じるか、破棄操作で消去します。</p>
+          <p class="muted">ここでのチェックは<strong>ブラウザー内での比較処理への許可</strong>です。継続監視サービスへの正式な申込・同意記録・購読停止の手続きではありません。</p>
+        </div>
+        <label class="check-row" for="local-consent"><input type="checkbox" id="local-consent"><span>観測データをこの端末内だけで読み込み、比較表示することに同意します。</span></label>
+        <div class="actions">
+          <button type="button" class="secondary danger" id="clear-data">許可を取り消し、読み込んだデータを破棄</button>
+          <span class="hint" id="consent-status" role="status" aria-live="polite">未許可・データ未読込</span>
+        </div>
+      </section>
+      <section class="pane" aria-labelledby="upload-heading">
+        <div class="pane-head"><span class="num">02</span><div><h2 id="upload-heading">前回と今回の観測ファイルを選択</h2><p>BreakAIの匿名化GEO観測ファイル（JSON形式）を使用します。</p></div></div>
+        <div class="upload-grid">
+          <label class="upload" for="previous-file"><span class="file-icon" aria-hidden="true">01</span><b>前回の観測</b><span id="previous-label">ファイルを選択</span><input id="previous-file" type="file" accept=".json,application/json" disabled></label>
+          <label class="upload" for="current-file"><span class="file-icon" aria-hidden="true">02</span><b>今回の観測</b><span id="current-label">ファイルを選択</span><input id="current-file" type="file" accept=".json,application/json" disabled></label>
+        </div>
+        <p class="small">最大200KB/ファイル。メール・社名・URL・生のAI回答が入っているファイルは受け付けません。観測結果は同じ対象・質問・モデル・地域でなければ比較しません。</p>
+        <div class="actions"><button type="button" class="primary" id="compare" disabled>観測の差分を表示 <span aria-hidden="true">→</span></button><button type="button" class="secondary" id="demo" disabled>サンプルで試す</button></div>
+        <p class="status" id="message" role="status" aria-live="polite">利用に同意するとファイルを選択できます。</p>
+      </section>
+      <section class="pane" id="results" aria-labelledby="results-heading" hidden>
+        <div class="pane-head"><span class="num">03</span><div><h2 id="results-heading">AIごとの変化</h2><p id="result-dates"></p></div></div>
+        <div class="result-state" id="comparison-state"></div>
+        <div class="metrics" id="metric-cards"></div>
+        <p class="small" id="result-note">取得時点の言及・引用差分であり、検索順位や改善の因果関係を示すものではありません。</p>
+        <button type="button" class="secondary" id="download-result">比較結果をテキストで保存</button>
+      </section>
+    </div>
+    <aside class="side">
+      <section class="side-card">
+        <span class="aside-kicker">PRIVACY FIRST</span>
+        <h3>データの所有権は、<br>利用者側に。</h3>
+        <p>診断結果を利用者自身で保持し、比較する方式です。運営側に顧客一覧やAI回答本文を新たに蓄積しません。</p>
+        <div class="rule"><span>外部送信</span><b>なし</b></div>
+        <div class="rule"><span>端末内への永続保存</span><b>なし</b></div>
+        <div class="rule"><span>この画面での請求</span><b>なし</b></div>
+      </section>
+      <section class="side-card">
+        <span class="aside-kicker">BENCHMARK</span>
+        <h3>業界平均はまだ準備中</h3>
+        <p>実際に利用者の許諾が得られ、同条件の匿名企業データが5社以上になった区分のみ公開対象です。サンプル不足時は数字を作りません。</p>
+        <div class="waiting"><span></span> 現在は非公開</div>
+      </section>
+      <section class="side-card help">
+        <h3>定期監視・停止について</h3>
+        <p>現時点では定期再測定・月額課金は行っていません。将来のプラン申込や正式な配信停止・データ削除は、こちらの端末内設定とは別の手続きになります。</p>
+        <a href="https://breakai-labs.co.jp/contact">BreakAI Labsに問い合わせる <span aria-hidden="true">↗</span></a>
+      </section>
+    </aside>
+  </section>
+  <section class="explain">
+    <div><span class="aside-kicker">HOW TO READ</span><h2>良くなったかどうかは、<br>同じものを比べて判断。</h2></div>
+    <p>モデルや質問が変わると比較結果も変わります。同条件が確認できない場合、比較可能と表示しません。業界平均も将来の順位保証には使いません。</p>
+  </section>
+</main>
+<footer><span>© BreakAI Labs — Evidence over assumptions.</span><div><a href="ai-search.html">GEO診断</a><a href="privacy.html?from=geo">プライバシー</a><a href="legal.html?from=geo">販売条件</a></div></footer>
+</body>
+</html>
