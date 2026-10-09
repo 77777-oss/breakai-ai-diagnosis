@@ -23,7 +23,7 @@
   <p class="intro">購入時のメールアドレスで本人確認してから、対象となる注文と継続監視の希望設定を表示します。<strong>料金や定期的なAI実行は発生しません。</strong></p>
   <div class="pills"><span>購入者認証</span><span>本人のみ設定変更</span><span>請求なし</span></div>
  </div>
- <aside class="hero-panel"><div class="panel-top"><span>CUSTOMER ACCOUNT</span><span class="pill-hold">試験公開</span></div><div class="big">01<span> account</span></div><p>これは**継続監視の利用希望の受付**です。自動観測開始、月額契約、請求の承諾にはなりません。</p><div class="divider"></div><p class="small">ログインに利用するメールアドレスはSupabase Authで検証します。支払情報はStripeで管理され、カード番号を取得しません。</p></aside>
+ <aside class="hero-panel"><div class="panel-top"><span>CUSTOMER ACCOUNT</span><span class="pill-hold">試験公開</span></div><div class="big">01<span> account</span></div><p>これは<strong>継続監視の利用希望の受付</strong>です。自動観測開始、月額契約、請求の承諾にはなりません。</p><div class="divider"></div><p class="small">ログインに利用するメールアドレスはSupabase Authで検証します。支払情報はStripeで管理され、カード番号を取得しません。</p></aside>
 </section>
 <section class="shell">
 <div class="steps"><span><b>01</b> メール本人確認</span><span><b>02</b> 購入済み注文</span><span><b>03</b> 監視希望・停止</span></div>
@@ -32,7 +32,7 @@
  <div class="pane-head"><span class="num">01</span><div><h2 id="login-heading">購入時のメールでログイン</h2><p>メール内の認証リンクを開くと、注文情報を本人だけが確認できます。</p></div></div>
  <label for="customer-email">購入時のメールアドレス</label>
  <input id="customer-email" type="email" inputmode="email" autocomplete="email" placeholder="name@company.jp" maxlength="254">
- <div class="actions" style="margin-top:15px"><button id="send-login" class="primary" type="button">認証メールを送る</button><button id="logout" class="secondary" type="button" hidden>ログアウト</button></div>
+ <div class="actions account-actions"><button id="send-login" class="primary" type="button">認証メールを送る</button><button id="logout" class="secondary" type="button" hidden>ログアウト</button></div>
  <p id="login-status" role="status" aria-live="polite" class="status">未ログイン。購入済みの注文情報は表示されません。</p>
  <p class="small">リンクが届かない場合、迷惑メールフォルダと入力したアドレスをご確認ください。メールが届くことは購入の証明ではなく、購入情報は別途照合されます。</p>
 </section>
