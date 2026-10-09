@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="GEO購入者向けの認証済み注文履歴と継続監視の利用希望設定。定期課金や自動観測は未開始。">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src https://yqzxoiogkylgbmaftesv.supabase.co; form-action 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'">
+<title>GEO購入者向け管理（準備版）｜BreakAI Labs</title>
+<link rel="stylesheet" href="geo-monitor.css">
+<link rel="stylesheet" href="geo-monitor-account.css">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<script src="geo-monitor-account.js" defer></script>
+</head><body>
+<a class="skip" href="#main">内容へ移動</a>
+<header class="topbar">
+<a class="brand" href="ai-search.html"><span class="mark">B</span><span>BreakAI Labs<small>GEO / CUSTOMER</small></span></a>
+<nav aria-label="ナビ"><a href="geo-monitor.html">履歴比較</a><a href="ai-search.html">GEO診断</a><a href="privacy.html?from=geo">プライバシー</a></nav>
+</header>
+<main id="main">
+<section class="hero">
+ <div class="hero-main">
+  <div class="eyebrow"><span class="dot"></span> GEO / VERIFIED CUSTOMER ACCESS</div>
+  <h1>購入したレポートと、<br><em>監視設定を管理する。</em></h1>
+  <p class="intro">購入時のメールアドレスで本人確認してから、対象となる注文と継続監視の希望設定を表示します。<strong>料金や定期的なAI実行は発生しません。</strong></p>
+  <div class="pills"><span>購入者認証</span><span>本人のみ設定変更</span><span>請求なし</span></div>
+ </div>
+ <aside class="hero-panel"><div class="panel-top"><span>CUSTOMER ACCOUNT</span><span class="pill-hold">試験公開</span></div><div class="big">01<span> account</span></div><p>これは**継続監視の利用希望の受付**です。自動観測開始、月額契約、請求の承諾にはなりません。</p><div class="divider"></div><p class="small">ログインに利用するメールアドレスはSupabase Authで検証します。支払情報はStripeで管理され、カード番号を取得しません。</p></aside>
+</section>
+<section class="shell">
+<div class="steps"><span><b>01</b> メール本人確認</span><span><b>02</b> 購入済み注文</span><span><b>03</b> 監視希望・停止</span></div>
+<div class="workspace">
+<section class="pane" aria-labelledby="login-heading">
+ <div class="pane-head"><span class="num">01</span><div><h2 id="login-heading">購入時のメールでログイン</h2><p>メール内の認証リンクを開くと、注文情報を本人だけが確認できます。</p></div></div>
+ <label for="customer-email">購入時のメールアドレス</label>
+ <input id="customer-email" type="email" inputmode="email" autocomplete="email" placeholder="name@company.jp" maxlength="254">
+ <div class="actions" style="margin-top:15px"><button id="send-login" class="primary" type="button">認証メールを送る</button><button id="logout" class="secondary" type="button" hidden>ログアウト</button></div>
+ <p id="login-status" role="status" aria-live="polite" class="status">未ログイン。購入済みの注文情報は表示されません。</p>
+ <p class="small">リンクが届かない場合、迷惑メールフォルダと入力したアドレスをご確認ください。メールが届くことは購入の証明ではなく、購入情報は別途照合されます。</p>
+</section>
+<section id="orders-panel" class="pane" hidden aria-labelledby="orders-heading">
+ <div class="pane-head"><span class="num">02</span><div><h2 id="orders-heading">購入したGEO診断</h2><p>本人確認済みのメールに紐づく支払済み注文だけを表示します。</p></div></div>
+ <p id="orders-status" role="status" aria-live="polite"></p>
+ <div id="order-list"></div>
+</section>
+</div>
+<aside class="side">
+<section class="side-card"><span class="aside-kicker">SAFETY GATES</span><h3>購入者本人だけが操作</h3><p>認証済みメールと支払済み注文が一致した場合だけ、利用希望と停止を保存できます。</p><div class="rule"><span>毎月の請求</span><b>停止中</b></div><div class="rule"><span>AI再観測</span><b>停止中</b></div><div class="rule"><span>追加の商品購入</span><b>不要</b></div></section>
+<section class="side-card"><span class="aside-kicker">CONSENT</span><h3>本人の意思で停止できる</h3><p>同意は注文ごとに保持し、監視希望と匿名ベンチマークへの利用希望を別々に管理します。いつでも両方の希望を取り消せます。</p><p class="small">この画面での希望受付はサービスの正式な開始や契約同意とは別です。既存の診断レポートや法定保存対象は削除されません。</p></section>
+<section class="side-card help"><h3>ご不明点はこちら</h3><p>購入時アドレスが変わった場合や、注文が表示されない場合は、購入情報の照合が必要です。</p><a href="https://breakai-labs.co.jp/contact">BreakAI Labsへ問い合わせる ↗</a></section>
+</aside>
+</section>
+</main>
+<footer><span>© BreakAI Labs — Evidence over assumptions.</span><div><a href="geo-monitor.html">履歴比較</a><a href="ai-search.html">GEO診断</a><a href="privacy.html?from=geo">プライバシー</a></div></footer>
+</body></html>
