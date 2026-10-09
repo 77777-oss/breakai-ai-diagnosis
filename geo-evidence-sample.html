@@ -2,7 +2,7 @@
 <html lang="ja"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AI検索実測診断｜BreakAI Labs 実測サンプル</title>
-<meta name="description" content="BreakAI Labs自身を対象に、OpenAI API・Gemini APIで24観測したAI検索実測診断の実測サンプルです。">
+<meta name="description" content="BreakAI Labs自身を対象に、OpenAI API・Gemini API・Perplexity APIで36観測したAI検索実測診断の実測サンプルです。">
 <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="ai-search.css">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=20260916-gold-b">
 </head><body class="geoPremium geoSamplePage">
@@ -14,7 +14,7 @@
 <section class="geoSampleHero">
   <p class="sectionKicker">BreakAI自社実測 / 2026-09-13</p>
   <h1>購入前に、<br><span>実際の観測根拠の粒度</span>を確認できます。</h1>
-  <p>これは架空の顧客事例ではありません。BreakAI Labs自身を対象に、OpenAI API・Gemini APIへ同じ12問を投げた24観測の一部を、購入判断用の実測サンプルとして公開しています。</p>
+  <p>これは架空の顧客事例ではありません。BreakAI Labs自身を対象に、OpenAI API・Gemini API・Perplexity APIへ同じ12問を投げた36観測の一部を、購入判断用の実測サンプルとして公開しています。</p>
   <div class="geoSampleHeroActions">
     <a class="geoPrimaryLink" href="ai-search.html#free-diagnosis">自社URLを無料診断する →</a>
     <a class="geoSecondaryLink" href="ai-search.html#deliverables">19,800円版の提供範囲を見る</a>
@@ -22,10 +22,10 @@
 </section>
 
 <section class="geoSampleSummary" aria-label="実測サマリー">
-  <article><small>観測件数</small><strong>24</strong><span>2種類のAI × 12問</span></article>
-  <article><small>社名指定質問</small><strong>8 / 8</strong><span>社名指定では自社名を確認</span></article>
-  <article class="isAlert"><small>カテゴリ質問</small><strong>0 / 16</strong><span>カテゴリ比較では自社名を確認できず</span></article>
-  <article><small>自社サイト引用</small><strong>4</strong><span>OpenAI：4件</span></article>
+  <article><small>観測件数</small><strong>36</strong><span>3種類のAI × 12問</span></article>
+  <article><small>社名指定質問</small><strong>12 / 12</strong><span>3種類のAIすべてで社名指定4問に自社名を確認</span></article>
+  <article class="isAlert"><small>カテゴリ質問</small><strong>0 / 24</strong><span>3種類のAI×8カテゴリ質問で自社名を確認できず</span></article>
+  <article><small>自社サイト引用</small><strong>8</strong><span>OpenAI 4件 / Perplexity 4件 / Gemini 0件</span></article>
 </section>
 
 <section id="rows" class="geoSampleSection">
@@ -35,7 +35,7 @@
     <header><span>質問01 / カテゴリ</span><b>比較候補に出なかった例</b></header>
     <h3>「AI・業務改善でおすすめのAI業務支援は？」</h3>
     <div class="geoEvidenceCaseGrid">
-      <div><small>自社言及</small><strong>2種類とも非言及</strong><p>OpenAI・GeminiのいずれでもBreakAI Labsの言及を確認できませんでした。</p></div>
+      <div><small>自社言及</small><strong>3種類とも非言及</strong><p>OpenAI・Gemini・PerplexityのいずれでもBreakAI Labsの言及を確認できませんでした。</p></div>
       <div><small>OpenAI回答例</small><strong>BreakAI非言及</strong><p>取得時の回答ではChatGPT Business / Enterprise、Microsoft 365 Copilot、Gemini for Google Workspace等が候補として説明されました。</p></div>
       <div><small>引用元の傾向</small><strong>外部・公式情報中心</strong><p>OpenAI、Microsoft、Google等の公式情報が引用され、BreakAI公式サイトはこの質問では引用されませんでした。</p></div>
       <div><small>改善案</small><strong>カテゴリ質問へ直接答える</strong><p>「誰に・何を・どう提供するか」と比較時の判断材料を、公式サイト上でより明確にする改善候補が得られます。</p></div>
@@ -46,7 +46,7 @@
     <header><span>質問09 / 社名指定</span><b>社名指定では認識された例</b></header>
     <h3>「BreakAI Labsはどんな会社？」</h3>
     <div class="geoEvidenceCaseGrid">
-      <div><small>自社言及</small><strong>2種類とも言及あり</strong><p>OpenAI・Geminiの2系統すべてでBreakAI Labsの言及を確認しました。</p></div>
+      <div><small>自社言及</small><strong>3種類とも言及あり</strong><p>OpenAI・Gemini・Perplexityの3系統すべてでBreakAI Labsの言及を確認しました。</p></div>
       <div><small>AI回答例</small><strong>会社概要を説明</strong><p>取得時の回答では大阪拠点のAI・ソフトウェア開発会社として、AIシステム企画・開発等が要約されました。</p></div>
       <div><small>自社引用元</small><strong>公式サイト引用あり</strong><p><a href="https://breakai-labs.co.jp/" rel="noopener">breakai-labs.co.jp</a> と <a href="https://breakai-labs.co.jp/about" rel="noopener">/about</a> が引用元に含まれました。</p></div>
       <div><small>注意点</small><strong>類似名称の混同</strong><p>回答内で別法人・類似名称との混同注意が示されるケースがあり、会社情報の一意性も改善対象になります。</p></div>
@@ -61,6 +61,7 @@
     <article><small>言語 / 地域</small><b>日本語 / 日本</b><span>日本語・日本向け条件</span></article>
     <article><small>OpenAI</small><b>gpt-5.6-luna</b><span>API利用 / Web検索あり</span></article>
     <article><small>Gemini</small><b>gemini-3.8-flash</b><span>API利用</span></article>
+    <article><small>Perplexity</small><b>perplexity/sonar</b><span>API利用 / Web検索あり</span></article>
     <article><small>観測ルール</small><b>取得時点の記録</b><span>順位・推薦・売上は保証しない</span></article>
   </div>
 </section>
