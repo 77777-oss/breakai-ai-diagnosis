@@ -7,6 +7,7 @@ const state={url:'',audit:null,inFlight:false,requestSeq:0};
 let checkoutInFlight=false;
 const labels={identity:'会社情報',service_clarity:'サービス説明',crawl_basics:'クロール基本',machine_readable:'構造化データ',answer_ready:'よくある質問・回答情報'};
 function campaign(){const q=new URLSearchParams(location.search);return{source:q.get('utm_source')||'direct',medium:q.get('utm_medium')||'',campaign:q.get('utm_campaign')||'',content:q.get('utm_content')||''};}
+function prospectId(){const id=campaign().content;return /^pr_[0-9a-f]{24}$/.test(id)?id:'';}
 function sessionId(){try{let id=sessionStorage.getItem('breakai_geo_session');if(!id){id=crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(16).slice(2)}`;sessionStorage.setItem('breakai_geo_session',id);}return id;}catch(_){return'';}}
 function track(event,destination='',metric=null){const c=campaign();return fetch(FUNNEL_API,{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,body:JSON.stringify({product:'geo',event,destination,metric,...c,path:location.pathname,session:sessionId()})}).then(r=>{if(!r.ok)console.warn('funnel_event_not_recorded',event,r.status);return r;}).catch(e=>{console.warn('funnel_event_failed',event,e?.message||'unknown');return null;});}
 function chat(role,text){const box=$('#guideChat');const el=document.createElement('div');el.className=`guideMsg ${role}`;el.textContent=String(text??'');box.appendChild(el);box.scrollTop=box.scrollHeight;}
@@ -95,7 +96,8 @@ async function openPaidCheckout(e){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),12000);
   try{
-    const r=await fetch(CHECKOUT_API,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:controller.signal});
+    const pid=prospectId();
+    const r=await fetch(CHECKOUT_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pid?{prospect_id:pid}:{}),signal:controller.signal});
     const d=await r.json().catch(()=>({}));
     if(!r.ok)throw new Error(d.error||'CHECKOUT_REQUEST_FAILED');
     const u=new URL(String(d.checkout_url||''));
